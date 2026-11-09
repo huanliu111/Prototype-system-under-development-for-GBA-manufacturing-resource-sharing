@@ -1,0 +1,209 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}{{ experiment.name }} · 连续双向拍卖{% endblock %}
+{% block topbar_kicker %}WORKSPACE / EXPERIMENT RESULT{% endblock %}
+{% block page_title %}连续双向拍卖结果{% endblock %}
+{% block content %}
+<div class="model-context"><div><strong>连续双向拍卖 · 离散单位模型</strong><p>按每个资源单位的估值与成本进行报价撮合，供需曲线表示该市场的单位估值结构。</p></div><a class="btn btn-ghost btn-sm" href="{{ url_for('platform.algorithms') }}">共享算法对比 {{ icon('arrow',14) }}</a></div>
+{% set s = experiment.summary %}
+<header class="result-header">
+  <div class="result-title-block">
+    <a class="link-back" href="{{ url_for('history') }}">← 返回连续拍卖记录</a>
+    <div class="result-title-row">
+      <h2>{{ experiment.name }}</h2>
+      {% if experiment.is_sample %}<span class="badge badge-amber">预置场景</span>{% endif %}
+      <span class="badge badge-teal"><i class="status-dot"></i> 已完成</span>
+    </div>
+    <div class="result-meta">
+      <span>{{ icon('layers', 15) }} {{ experiment.resource_type }}</span>
+      <span>{{ icon('clock', 15) }} {{ experiment.created_at|datetime_cn }}</span>
+      <span>EXP-{{ '%04d'|format(experiment.id) }}</span>
+      {% if s.duration_ms %}<span>计算 {{ (s.duration_ms / 1000)|round(2) }}s</span>{% endif %}
+    </div>
+  </div>
+  <div class="result-actions">
+    <a class="btn btn-ghost" href="{{ url_for('download_csv', experiment_id=experiment.id) }}">{{ icon('download', 16) }} 导出 CSV</a>
+    <form method="post" action="{{ url_for('delete_experiment', experiment_id=experiment.id) }}"
+          data-confirm="确定删除这个实验及其图表吗？此操作不可撤销。">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+      <button class="btn btn-danger-ghost" type="submit">{{ icon('trash', 15) }} 删除</button>
+    </form>
+  </div>
+</header>
+
+{% if missing_result %}
+  <div class="empty-state large">
+    <span class="empty-icon">{{ icon('alert', 28) }}</span>
+    <h4>这次实验没有完整结果</h4>
+    <p>{{ experiment.error_message or '结果正在生成，或运行过程被中断。' }}</p>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('new_experiment') }}">重新运行一个实验</a>
+  </div>
+{% else %}
+<section class="kpi-grid result-kpis">
+  <article class="kpi-card highlight">
+    <div class="kpi-head"><span>配置效率</span><span class="kpi-icon teal">{{ icon('spark', 18) }}</span></div>
+    <strong class="kpi-value">{{ s.overall_efficiency|pct }}</strong>
+    <span class="kpi-foot">实现剩余 / 最大可能剩余</span>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-head"><span>累计成交</span><span class="kpi-icon">{{ icon('layers', 18) }}</span></div>
+    <strong class="kpi-value">{{ s.total_contracts }}</strong>
+    <span class="kpi-foot">Q* = {{ s.eq_quantity }} / 周期 · {{ s.periods }} 个周期</span>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-head"><span>成交均价</span><span class="kpi-icon amber">{{ icon('chart', 18) }}</span></div>
+    <strong class="kpi-value"><small>¥</small>{{ s.avg_price|money }}</strong>
+    <span class="kpi-foot">均衡区间 ¥{{ s.eq_price_low|money }} – ¥{{ s.eq_price_high|money }}</span>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-head"><span>实现社会剩余</span><span class="kpi-icon blue">{{ icon('users', 18) }}</span></div>
+    <strong class="kpi-value">{{ s.total_surplus|money }}</strong>
+    <span class="kpi-foot">最大可能剩余 {{ s.max_surplus|money }}</span>
+  </article>
+</section>
+
+<div class="result-grid">
+  <section class="panel chart-panel">
+    <div class="panel-head">
+      <div><span class="section-kicker">MARKET STRUCTURE</span><h3>单位估值供需曲线与均衡</h3></div>
+      <span class="chart-caption">单位：{{ experiment.unit_label }}</span>
+    </div>
+    {% if experiment.charts.supply_demand %}
+      <img class="result-chart" src="{{ url_for('experiment_chart',experiment_id=experiment.id,chart_name='supply_demand') }}" alt="供需曲线与均衡价格区间">
+    {% endif %}
+  </section>
+  <aside class="panel market-snapshot">
+    <div class="panel-head"><div><span class="section-kicker">MARKET SNAPSHOT</span><h3>市场快照</h3></div></div>
+    <div class="snapshot-list">
+      <div><span>均衡数量</span><strong>{{ s.eq_quantity }} <small>{{ experiment.unit_label }}</small></strong></div>
+      <div><span>均衡价格区间</span><strong>¥{{ s.eq_price_low|money }} – {{ s.eq_price_high|money }}</strong></div>
+      <div><span>平均成交率</span><strong>{{ (s.avg_trade_ratio * 100)|round(1) }}%</strong></div>
+      <div><span>平均 Smith α</span><strong>{{ s.avg_alpha }}</strong></div>
+      <div><span>报价策略</span><strong class="snapshot-small">{{ experiment.config.buyer_strategy|replace('Trader_', '') }} / {{ experiment.config.seller_strategy|replace('Trader_', '') }}</strong></div>
+      <div><span>随机种子</span><strong class="mono">{{ experiment.config.seed }}</strong></div>
+    </div>
+    <div class="snapshot-note">α 越小，成交价越接近理论均衡价。</div>
+  </aside>
+</div>
+
+<div class="result-grid two-charts">
+  <section class="panel chart-panel">
+    <div class="panel-head">
+      <div><span class="section-kicker">CONTRACT PRICES</span><h3>逐笔成交价格</h3></div>
+      <span class="chart-caption">{{ s.total_contracts }} 笔合约</span>
+    </div>
+    {% if experiment.charts.prices %}
+      <img class="result-chart" src="{{ url_for('experiment_chart',experiment_id=experiment.id,chart_name='prices') }}" alt="逐笔成交价格与均衡价格">
+    {% endif %}
+  </section>
+  <section class="panel chart-panel">
+    <div class="panel-head">
+      <div><span class="section-kicker">PERIOD PERFORMANCE</span><h3>逐期效率与成交率</h3></div>
+      <span class="chart-caption">{{ s.periods }} 个周期</span>
+    </div>
+    {% if experiment.charts.efficiency %}
+      <img class="result-chart" src="{{ url_for('experiment_chart',experiment_id=experiment.id,chart_name='efficiency') }}" alt="逐期配置效率与成交率">
+    {% endif %}
+  </section>
+</div>
+
+<section class="panel table-panel">
+  <div class="panel-head">
+    <div><span class="section-kicker">PERIOD DETAIL</span><h3>周期级结果</h3></div>
+    <span class="chart-caption">重复 {{ s.periods }} 个周期 × 每周期 {{ s.rounds }} 轮</span>
+  </div>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>周期</th><th>成交数</th><th>均价</th><th>实际剩余</th><th>最大剩余</th>
+          <th>配置效率</th><th>成交率</th><th>Smith α</th><th>报价数</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for period in experiment.result.periods %}
+          <tr>
+            <td><span class="period-dot"></span> P{{ period.period }}</td>
+            <td>{{ period.contracts }}</td>
+            <td>¥{{ period.avg_price|money }}</td>
+            <td>{{ period.actual_surplus|money }}</td>
+            <td>{{ period.max_surplus|money }}</td>
+            <td><strong class="teal-text">{{ period.efficiency|pct }}</strong></td>
+            <td>{{ (period.trade_ratio * 100)|round(1) }}%</td>
+            <td>{{ period.alpha }}</td>
+            <td>{{ period.orders }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel table-panel">
+  <div class="panel-head">
+    <div><span class="section-kicker">CONTRACT LEDGER</span><h3>逐笔成交记录</h3></div>
+    <span class="chart-caption">买方估值 − 卖方成本 = 单位社会剩余</span>
+  </div>
+  {% if experiment.result.contracts %}
+    <div class="table-scroll tall">
+      <table class="data-table">
+        <thead>
+          <tr><th>#</th><th>周期</th><th>需求企业</th><th>供给企业</th><th>成交价</th><th>需求估值</th><th>供给成本</th><th>单位剩余</th></tr>
+        </thead>
+        <tbody>
+          {% for contract in experiment.result.contracts %}
+            <tr>
+              <td class="mono">{{ '%03d'|format(contract.no) }}</td>
+              <td>P{{ contract.period }}</td>
+              <td><span class="party buyer">{{ contract.buyer_id }}</span> {{ contract.buyer }}</td>
+              <td><span class="party seller">{{ contract.seller_id }}</span> {{ contract.seller }}</td>
+              <td><strong>¥{{ contract.price|money }}</strong></td>
+              <td>{{ contract.value|money }}</td>
+              <td>{{ contract.cost|money }}</td>
+              <td class="{{ 'teal-text' if contract.surplus >= 0 else 'danger-text' }}">{{ contract.surplus|money }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state compact"><p>本次运行没有形成成交。可以提高需求估值、降低成本或放宽价格边界后重试。</p></div>
+  {% endif %}
+</section>
+
+<div class="result-bottom-grid">
+  <section class="panel table-panel">
+    <div class="panel-head">
+      <div><span class="section-kicker">TRADER OUTCOMES</span><h3>企业级结果</h3></div>
+      <span class="chart-caption">所有周期汇总</span>
+    </div>
+    <div class="table-scroll tall">
+      <table class="data-table compact-table">
+        <thead><tr><th>企业</th><th>角色</th><th>策略</th><th>成交单位</th><th>累计收益</th><th>效率贡献</th></tr></thead>
+        <tbody>
+          {% for trader in experiment.result.traders %}
+            <tr>
+              <td><span class="party {{ 'buyer' if trader.role == 'buyer' else 'seller' }}">{{ trader.id }}</span> {{ trader.name }}</td>
+              <td>{{ trader.role_label }}</td>
+              <td class="mono">{{ trader.strategy|replace('Trader_', '') }}</td>
+              <td>{{ trader.units }}</td>
+              <td>{{ trader.earnings|money }}</td>
+              <td class="{{ 'teal-text' if trader.efficiency >= 0 else 'danger-text' }}">{{ trader.efficiency|pct }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <aside class="panel interpretation">
+    <span class="small-icon">{{ icon('info', 18) }}</span>
+    <h3>如何阅读这些结果</h3>
+    <p><strong>配置效率</strong>衡量实际实现的社会剩余占理论最大剩余的比例。它越高，说明资源越接近“给到最需要、成本最低的企业”。</p>
+    <p><strong>成交价散点</strong>说明连续双向拍卖的路径依赖：即使均衡区间相同，逐笔价格仍会因报价顺序和策略而变化。</p>
+    <p><strong>Smith α</strong>衡量成交价偏离理论均衡价的程度，数值越小表示价格偏离越小；它与估值反馈迭代的固定点残差是不同指标。</p>
+    <a class="text-link" href="{{ url_for('methodology') }}">查看完整方法 {{ icon('arrow', 14) }}</a>
+  </aside>
+</div>
+{% endif %}
+{% endblock %}

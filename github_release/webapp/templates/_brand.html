@@ -1,0 +1,7 @@
+{% macro brand(href, compact=false) -%}
+<a class="miot-brand{{ ' miot-brand-compact' if compact }}" href="{{ url_for('login') }}" aria-label="MIoT 制造资源协同平台">
+  <span class="miot-ribbon" aria-hidden="true"><svg viewBox="0 0 190 78" preserveAspectRatio="none"><path d="M9 58 C47 17 108 2 184 15 C145 27 104 37 74 49 C47 59 27 66 9 58Z" fill="#6f9f83" opacity=".18"/><path d="M41 73 C82 44 130 31 177 38 C139 47 100 59 64 77 C55 81 48 78 41 73Z" fill="#175d58" opacity=".11"/><path d="M10 58 C47 17 108 2 184 15" fill="none" stroke="#4f8b6f" stroke-width="1.3" opacity=".24"/></svg></span>
+  <span class="miot-wordmark" aria-hidden="true">MI<span>o</span>T</span>
+  <span class="miot-brand-copy"><strong>{{ t('brand.platform_short') if compact else t('brand.platform') }}</strong><small>{{ t('brand.team') }}</small></span>
+</a>
+{%- endmacro %}

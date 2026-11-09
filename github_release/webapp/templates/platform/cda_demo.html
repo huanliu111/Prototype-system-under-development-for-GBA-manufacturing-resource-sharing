@@ -1,0 +1,55 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import status_badge %}
+{% block title %}连续双向拍卖情景{% endblock %}
+{% block page_title %}连续双向拍卖情景{% endblock %}
+{% block content %}
+<header class="result-header">
+  <div class="result-title-block">
+    <a class="link-back" href="{{ url_for('platform.algorithms') }}">← 返回算法与仿真</a>
+    <div class="result-title-row"><h2>连续双向拍卖 · 区域加工能力共享</h2><span class="badge badge-teal">独立对比方法 · 离散单位模型</span></div>
+    <div class="result-meta"><span>{{ config.resource_type }}</span><span>6 家需求企业 · 6 家供给企业 · {{ summary.units }} 个单位/企业</span><span>种子 {{ config.seed }} · {{ config.periods }} 个周期 × {{ config.rounds }} 轮</span></div>
+  </div>
+  <div class="result-actions"><a class="btn btn-ghost" href="{{ url_for('new_experiment', preset='equipment') }}">打开可配置实验 {{ icon('arrow',15) }}</a></div>
+</header>
+
+<div class="alert alert-info">{{ icon('info',18) }}<span><strong>这是独立对比方法，不是第六章迭代双向拍卖。</strong> 本页保留原始连续双向拍卖的离散单位报价、逐笔合约和供需阶梯图；它不计入连续机时算法的同场景福利表。</span></div>
+
+<section class="panel cda-current-context">
+  <div class="panel-head"><div><span class="section-kicker">CURRENT PLATFORM SNAPSHOT</span><h3>当前平台上的同类资源条件</h3></div></div>
+  <p>CNC-3AXIS：<strong>{{ current.providers }}</strong> 家当前供给企业，<strong>{{ '%.3f'|format(current.available_milli / 1000) }}</strong> 机时可用；<strong>{{ demand_count }}</strong> 条 CNC 需求记录；平台已有 <strong>{{ completed }}</strong> 个已完成共享任务。</p>
+  <p class="form-hint">上面的 6×6 情景是离散单位验证样本，用于观察共享价格与效率；它不把历史承诺当作买卖报价，也不替代当前业务数据。两类数据在页面上分开标注。</p>
+</section>
+
+<section class="kpi-grid platform-kpis">
+  <article class="kpi-card highlight"><div class="kpi-head"><span>成交合约</span></div><strong class="kpi-value">{{ summary.total_contracts }}</strong><span class="kpi-foot">{{ summary.periods }} 个周期累计</span></article>
+  <article class="kpi-card"><div class="kpi-head"><span>实现效率</span></div><strong class="kpi-value">{{ '%.1f'|format(summary.overall_efficiency) }}<small>%</small></strong><span class="kpi-foot">实际剩余 / 最大可能剩余</span></article>
+  <article class="kpi-card"><div class="kpi-head"><span>成交均价</span></div><strong class="kpi-value">¥{{ '%.2f'|format(summary.avg_price) }}</strong><span class="kpi-foot">逐笔合约的算术平均</span></article>
+  <article class="kpi-card"><div class="kpi-head"><span>均衡区间</span></div><strong class="kpi-value">¥{{ summary.eq_price_low }}–{{ summary.eq_price_high }}</strong><span class="kpi-foot">Q* = {{ summary.eq_quantity }} · 单位{{ summary.units }}</span></article>
+</section>
+
+<section class="panel cda-chart-main">
+  <div class="panel-head"><div><span class="section-kicker">SUPPLY / DEMAND</span><h3>共享情景的供需阶梯与均衡</h3></div><span class="chart-caption">红色：需求估值 · 绿色：供给成本 · 黄色：均衡区间</span></div>
+  <div class="cda-image-wrap"><img src="{{ chart_prefix }}supply_demand" alt="Supply, demand and equilibrium" loading="lazy"></div>
+  <p class="comparison-note">六个需求企业和六个供给企业按离散单位报价。阶梯图展示每个单位的最高支付意愿和最低可接受成本；交点附近为均衡数量与价格区间。</p>
+</section>
+
+<section class="cda-chart-grid">
+  <article class="panel"><div class="panel-head"><div><span class="section-kicker">CONTRACTS</span><h3>逐笔成交价格</h3></div></div><div class="cda-image-wrap"><img src="{{ chart_prefix }}prices" alt="Contract prices over the auction" loading="lazy"></div></article>
+  <article class="panel"><div class="panel-head"><div><span class="section-kicker">EFFICIENCY</span><h3>逐期效率与成交率</h3></div></div><div class="cda-image-wrap"><img src="{{ chart_prefix }}efficiency" alt="Efficiency and trade ratio by period" loading="lazy"></div></article>
+</section>
+
+<section class="panel table-panel">
+  <div class="panel-head"><div><span class="section-kicker">CONTRACT LEDGER</span><h3>共享合约样本</h3></div><span class="chart-caption">显示前 {{ contracts|length }} 笔，共 {{ result.contracts|length }} 笔</span></div>
+  <div class="table-scroll"><table class="data-table"><thead><tr><th>合约</th><th>周期</th><th>需求企业</th><th>供给企业</th><th>成交价</th><th>需求估值</th><th>供给成本</th><th>单位剩余</th></tr></thead><tbody>
+  {% for item in contracts %}<tr><td>{{ item.no }}</td><td>{{ item.period }}</td><td>{{ item.buyer }}</td><td>{{ item.seller }}</td><td>¥{{ '%.0f'|format(item.price) }}</td><td>¥{{ item.value }}</td><td>¥{{ item.cost }}</td><td>{{ item.surplus }}</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+
+<section class="panel cda-explanation"><div class="panel-head"><div><span class="section-kicker">HOW TO READ</span><h3>如何理解这个对比方法</h3></div></div><div class="cda-explanation-grid">
+  <div><strong>离散单位报价</strong><p>每家企业在同一轮中可以提交多个单位的买卖报价，而不是连续机时模型中的边际信号。</p></div>
+  <div><strong>逐轮撮合</strong><p>价格优先、时间优先，成交价由当时对手方的可接受报价决定；图中逐笔价格会随路径变化。</p></div>
+  <div><strong>效率与均衡</strong><p>实现效率衡量实际社会剩余占理论最大剩余的比例；均衡区间来自排序后的供需阶梯。</p></div>
+  <div><strong>和论文算法的关系</strong><p>它是一个独立的离散单位比较情景，用于展示“共享如何发生”；不替代第六章连续机时迭代算法的同场景福利检验。</p></div>
+</div></section>
+{% endblock %}

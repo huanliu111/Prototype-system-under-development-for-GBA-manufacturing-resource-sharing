@@ -1,0 +1,50 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import status_badge, ledger_mode %}
+{% block title %}共享任务{% endblock %}
+{% block topbar_kicker %}COMMITMENT / TASKS{% endblock %}
+{% block page_title %}共享任务{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <span class="section-kicker">SHARED COMMITMENTS</span>
+    <h2 class="page-title">从预留到履约</h2>
+    <p class="page-lede">一个共享承诺必须经过容量预留、参与方分别确认、执行、验收与记账；任何一步失败都保留原始状态。</p>
+  </div>
+  <span class="page-context">{{ current_org.name if current_org else '' }}</span>
+</div>
+
+<section class="panel table-panel">
+  <div class="panel-head">
+    <div><span class="section-kicker">COMMITMENT LEDGER</span><h3>共享承诺</h3></div>
+    {{ ledger_mode() }}
+  </div>
+  {% if commitments %}
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>承诺</th><th>需求方</th><th>数量</th><th>窗口</th><th>状态</th><th>版本</th><th>创建时间</th></tr></thead>
+        <tbody>
+        {% for item in commitments %}
+          <tr>
+            <td><a class="table-primary" href="{{ url_for('platform.commitment_detail', commitment_id=item.id) }}">{{ item.ref }} {{ icon('arrow', 13) }}</a></td>
+            <td>{{ item.buyer_name }}</td>
+            <td><strong>{{ item.total_milli|hours(item.unit) }}</strong></td>
+            <td>{{ item.window_start|datetime_cn('%m-%d %H:%M') }} – {{ item.window_end|datetime_cn('%m-%d %H:%M') }}</td>
+            <td>{{ status_badge(item.status) }}</td>
+            <td class="mono">v{{ item.version }}</td>
+            <td>{{ item.created_at|datetime_cn }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state large"><span class="empty-icon">{{ icon('check', 28) }}</span><h4>还没有共享承诺</h4><p>先从需求中心生成协调方案，再由联盟协调员执行容量预留。</p></div>
+  {% endif %}
+</section>
+
+<div class="platform-note">
+  {{ icon('info', 16) }}
+  <p><strong>状态边界：</strong>“已预留”不等于“已确认”；“已执行”不等于“已验收”；“已验收”也不等于“已付款”。当前仅做记账式模拟结算。</p>
+</div>
+{% endblock %}

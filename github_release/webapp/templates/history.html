@@ -1,0 +1,70 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}连续拍卖记录{% endblock %}
+{% block topbar_kicker %}WORKSPACE / HISTORY{% endblock %}
+{% block page_title %}连续拍卖记录{% endblock %}
+{% block content %}
+<div class="model-context"><div><strong>连续双向拍卖 · 离散单位模型</strong><p>按每个资源单位的估值与成本进行报价撮合，供需曲线表示该市场的单位估值结构。</p></div><a class="btn btn-ghost btn-sm" href="{{ url_for('platform.algorithms') }}">共享算法对比 {{ icon('arrow',14) }}</a></div>
+<div class="page-heading">
+  <div>
+    <span class="section-kicker">REPRODUCIBLE EVIDENCE</span>
+    <h2 class="page-title">连续双向拍卖运行记录</h2>
+    <p class="page-lede">此处只记录连续双向拍卖的逐单位报价结果。迭代协调与同场景算法对比从“算法与仿真”进入。</p>
+  </div>
+  <div class="page-heading-actions">
+    <a class="btn btn-primary" href="{{ url_for('new_experiment') }}">{{ icon('plus', 16) }} 新建实验</a>
+  </div>
+</div>
+
+<div class="inline-stats">
+  <span><strong>{{ stats.count }}</strong> 个实验</span>
+  <span><strong>{{ stats.completed }}</strong> 个已完成</span>
+  <span><strong>{{ stats.avg_efficiency|pct }}</strong> 平均配置效率</span>
+  <span><strong>{{ stats.total_contracts }}</strong> 笔成交</span>
+</div>
+
+<section class="panel table-panel">
+  {% if experiments %}
+    <div class="table-scroll">
+      <table class="data-table history-table">
+        <thead>
+          <tr><th>实验</th><th>资源场景</th><th>市场结构</th><th>运行时间</th><th>效率</th><th>成交</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for item in experiments %}
+            <tr>
+              <td>
+                <a class="table-primary" href="{{ url_for('experiment_result', experiment_id=item.id) }}">
+                  {% if item.is_sample %}<span class="tiny-badge">示例</span>{% endif %}
+                  {{ item.name }}
+                </a>
+                <span class="table-sub">EXP-{{ '%04d'|format(item.id) }} · {{ item.config.periods or '—' }} 周期</span>
+              </td>
+              <td>{{ item.resource_type or '制造资源共享' }}</td>
+              <td>{{ item.summary.num_buyers or '—' }} 需 / {{ item.summary.num_sellers or '—' }} 供 · {{ item.summary.units or '—' }} 单位</td>
+              <td>{{ item.created_at|datetime_cn }}</td>
+              <td><strong class="teal-text">{{ item.summary.overall_efficiency|pct }}</strong></td>
+              <td>{{ item.summary.total_contracts or 0 }}</td>
+              <td class="table-actions">
+                <a class="icon-btn" href="{{ url_for('experiment_result', experiment_id=item.id) }}" title="查看结果" aria-label="查看结果">{{ icon('arrow', 17) }}</a>
+                <form method="post" action="{{ url_for('delete_experiment', experiment_id=item.id) }}"
+                      data-confirm="确定删除“{{ item.name }}”吗？此操作不可撤销。">
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                  <button class="icon-btn danger" type="submit" title="删除实验" aria-label="删除实验">{{ icon('trash', 16) }}</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state large">
+      <span class="empty-icon">{{ icon('history', 28) }}</span>
+      <h4>实验记录还是空的</h4>
+      <p>运行一个预置场景，系统会自动把参数、图表和逐笔合约保存在这里。</p>
+      <a class="btn btn-primary btn-sm" href="{{ url_for('new_experiment', preset='equipment') }}">运行第一个实验</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

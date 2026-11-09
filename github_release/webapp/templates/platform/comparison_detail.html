@@ -1,0 +1,48 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import status_badge %}
+{% block title %}算法对比 {{ run.id }}{% endblock %}
+{% block page_title %}算法对比{% endblock %}
+{% block content %}
+<header class="result-header"><div class="result-title-block"><a class="link-back" href="{{ url_for('platform.algorithms') }}">← 返回算法与仿真</a><div class="result-title-row"><h2>CMP-{{ '%04d'|format(run.id) }} · {{ run.snapshot.label }}</h2><span class="badge badge-teal">相同输入 · 连续机时</span></div><div class="result-meta"><span>{{ run.created_at|datetime_cn }}</span><span>输入摘要 {{ run.input_hash[:12] }}</span></div></div><div class="result-actions"><a class="btn btn-ghost btn-sm" href="{{ url_for('platform.comparison_csv',comparison_id=run.id) }}">摘要 CSV</a><a class="btn btn-primary btn-sm" href="{{ url_for('platform.comparison_export',comparison_id=run.id) }}">输入与完整结果 JSON</a></div></header>
+<div class="comparison-context"><span><strong>{{ run.snapshot.capability|default('CNC-3AXIS') }}</strong> · {{ run.snapshot.unit|default('机时') }}</span><span>{{ run.snapshot.demands|length }} 家需求方 · {{ run.snapshot.capacities|length }} 家供给方</span><span>最低需求合计 {{ '%.3f'|format(run.snapshot.demands|sum) }} {{ run.snapshot.unit|default('机时') }}</span><span>可用容量合计 {{ '%.3f'|format(run.snapshot.capacities|sum) }} {{ run.snapshot.unit|default('机时') }}</span></div>{% if run.snapshot.case == 'network' %}<div class="alert alert-info network-note">{{ icon('info',18) }}<span><strong>稀疏网络场景：</strong>固定参考价和单边供给按需求顺序分配，可能因局部贪心无法满足后续最低需求；迭代双向拍卖通过全局清算找到可行分配。集中式福利基准是不可执行的理论上界，不是竞争机制。</span></div>{% endif %}
+<section class="panel table-panel"><div class="panel-head"><h3>分配与结算结果</h3>{% if run.paper_run_id %}<a class="text-link" href="{{ url_for('platform.coordination_detail',run_id=run.paper_run_id) }}">查看完整迭代轨迹 {{ icon('arrow',14) }}</a>{% endif %}</div><div class="table-scroll"><table class="data-table comparison-table"><thead><tr><th>方法</th><th>状态</th><th>分配量</th><th>社会福利</th><th>平台余额</th><th>计算时间</th><th>求解/迭代步数</th></tr></thead><tbody>{% for row in rows %}<tr><td><strong>{{ row.label }}</strong><span class="table-sub">{{ row.version }}{% if row.group %} · {{ {'proposed':'论文方法','baseline':'对比基线','benchmark':'福利基准','ablation':'消融'}.get(row.group,row.group) }}{% endif %}{% if row.applicability %} · {{ row.applicability }}{% endif %}</span></td><td>{{ status_badge(row.status) }}</td><td>{{ '%.3f'|format(row.total_quantity) if row.total_quantity is not none else '—' }}</td><td>{{ '%.4f'|format(row.welfare) if row.welfare_comparable else '—' }}</td><td>{{ '¥%.4f'|format(row.broker_surplus) if row.broker_surplus is not none else '不适用' }}</td><td>{{ '%.1f'|format(row.elapsed*1000) }} ms</td><td>{{ row.iterations }}</td></tr>{% endfor %}</tbody></table></div><p class="comparison-note">集中式基准不含支付规则，平台余额不适用。结算不可行或未收敛的候选解保留原状态；物理可行并不等于可以成交。无迭代、无候选筛选和无状态核验的消融结果保留明确失败状态，不进入福利比较图。不同方法的步数含义不同，计算时间是本次运行的测量值。</p></section>
+{% if bars_3d %}<section class="panel welfare-panel chart3d-panel">
+  <div class="panel-head"><div><span class="section-kicker">WELFARE LANDSCAPE</span><h3>同一估值口径下的社会福利</h3></div><span class="chart-caption">立体柱高 = 社会福利 · 连续候选分配</span></div>
+  <div class="table-scroll">
+    <svg class="welfare-plot welfare-3d" viewBox="0 0 {{ bars_3d.width }} {{ bars_3d.height }}" role="img" aria-label="各方法社会福利立体柱状图，具体数值见上方结果表">
+      <line x1="52" y1="{{ bars_3d.base }}" x2="{{ bars_3d.width - 34 }}" y2="{{ bars_3d.base }}" class="plot-axis"/>
+      <line x1="52" y1="{{ bars_3d.base - 88 }}" x2="{{ bars_3d.width - 34 }}" y2="{{ bars_3d.base - 88 }}" class="plot-grid"/>
+      <line x1="52" y1="{{ bars_3d.base - 176 }}" x2="{{ bars_3d.width - 34 }}" y2="{{ bars_3d.base - 176 }}" class="plot-grid"/>
+      <line x1="52" y1="{{ bars_3d.base }}" x2="52" y2="{{ bars_3d.base - 176 }}" class="plot-axis"/>
+      <text x="8" y="{{ bars_3d.base + 4 }}" class="chart-tick">0</text>
+      <text x="8" y="{{ bars_3d.base - 172 }}" class="chart-tick">{{ '%.0f'|format(bars_3d.hi) }}</text>
+      {% for bar in bars_3d.bars %}
+      <g class="chart3d-bar">
+        <polygon points="{{ bar.front }}" class="welfare-3d-front welfare-{{ bar.method }}"/>
+        <polygon points="{{ bar.top_face }}" class="welfare-3d-top welfare-{{ bar.method }}"/>
+        <polygon points="{{ bar.side }}" class="welfare-3d-side welfare-{{ bar.method }}"/>
+        <text x="{{ bar.label_x }}" y="{{ bars_3d.base + 30 }}" class="chart3d-label" text-anchor="end" transform="rotate(-28 {{ bar.label_x }} {{ bars_3d.base + 30 }})">{{ bar.label }}</text>
+        <text x="{{ bar.label_x + bar.depth }}" y="{{ bar.top - bar.depth - 8 }}" class="chart3d-value" text-anchor="middle">{{ '%.1f'|format(bar.value) }}</text>
+      </g>
+      {% endfor %}
+      <text x="{{ bars_3d.width - 34 }}" y="{{ bars_3d.base - 192 }}" class="chart-tick">社会福利</text>
+    </svg>
+  </div>
+  <p class="comparison-note">柱高只表示物理可行候选的社会福利；候选违约、未核验状态、结算不可行和未收敛结果不进入图形。立体投影只用于视觉比较，精确数值以结果表为准。</p>
+</section>{% endif %}{% if scatter_3d %}<section class="panel chart3d-panel">
+  <div class="panel-head"><div><span class="section-kicker">ALGORITHM FINGERPRINT</span><h3>福利、迭代与耗时的三维投影</h3></div><span class="chart-caption">高度 = 福利 · 纵深 = 迭代步数 · 气泡 = 本次耗时</span></div>
+  <div class="table-scroll"><svg class="welfare-plot welfare-scatter-3d" viewBox="0 0 {{ scatter_3d.width }} {{ scatter_3d.height }}" role="img" aria-label="各方法福利、迭代步数和计算耗时的三维散点投影">
+    <line x1="44" y1="{{ scatter_3d.base }}" x2="{{ scatter_3d.width - 30 }}" y2="{{ scatter_3d.base }}" class="plot-axis"/>
+    <line x1="44" y1="{{ scatter_3d.base }}" x2="44" y2="{{ scatter_3d.base - 180 }}" class="plot-axis"/>
+    {% for p in scatter_3d.points %}<g class="scatter3d-point"><line x1="{{ p.anchor_x }}" y1="{{ scatter_3d.base }}" x2="{{ p.x }}" y2="{{ p.y }}" class="scatter3d-stem"/><circle cx="{{ p.x }}" cy="{{ p.y }}" r="{{ p.r }}" class="welfare-{{ p.method }}"/><text x="{{ p.x }}" y="{{ p.y + 5 }}" class="scatter3d-index" text-anchor="middle">{{ loop.index }}</text></g>{% endfor %}
+    <text x="8" y="{{ scatter_3d.base - 168 }}" class="chart-tick">福利</text><text x="{{ scatter_3d.width - 110 }}" y="{{ scatter_3d.base + 20 }}" class="chart-tick">方法序列 → 纵深=迭代</text>
+  </svg></div>
+  <div class="scatter-legend">
+    {% for p in scatter_3d.points %}<div><span class="legend-index">{{ loop.index }}</span><span class="legend-dot welfare-{{ p.method }}"></span><strong>{{ p.label }}</strong><small>{{ '%.1f'|format(p.value) }} 福利 · {{ p.iterations }} 步</small></div>{% endfor %}
+  </div>
+  <p class="comparison-note">三维散点仅作方法特征对比；气泡大小表示本次运行耗时，不表示统计显著性。未收敛、不可结算或候选违约的结果不绘制。</p>
+</section>{% endif %}
+<section class="panel table-panel"><div class="panel-head"><h3>各需求方的分配量</h3><span class="chart-caption">单位：机时</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>需求方</th><th>最低量</th>{% for row in rows %}<th>{{ row.label }}</th>{% endfor %}</tr></thead><tbody>{% for demand in run.snapshot.demands %}{% set i=loop.index0 %}<tr><td>{% if run.snapshot.demand_labels is defined %}{{ run.snapshot.demand_labels[i] }}{% else %}MD-{{ i+1 }}{% endif %}</td><td>{{ '%.3f'|format(demand) }}</td>{% for row in rows %}<td>{{ '%.3f'|format(row.demand_totals[i]) if row.demand_totals is defined else '—' }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div></section>
+<details class="panel run-technical"><summary>输入、参数与结果口径</summary><p>所有方法使用相同的候选关系、最低需求、容量和合成函数。需求收益为逐关系对数函数；供给成本采用{{ '指数' if run.snapshot.provider_model=='exponential' else '二次' }}函数。最低需求采用 ≥ 约束，分配可以高于最低量。</p><p>ρ={{ run.result.settings.rho }}，δ={{ run.result.settings.delta }}，最大 {{ run.result.settings.max_iterations }} 轮；固定参考价 {{ run.result.reference_price }} 元/机时。收益与成本函数的完整参数可在 JSON 中核对。</p><p>此处比较连续解，不进行业务预留或数量、金额离散化。当前为单次合成模拟，结果随数据与参数变化。单边供给拍卖和规则匹配是基线；无迭代、无候选筛选、无状态核验是单因素消融。它们不能替代多场景、重复运行和统计检验。</p><code>{{ run.input_hash }}</code></details>
+{% endblock %}

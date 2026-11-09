@@ -1,0 +1,9 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}本地估值{% endblock %}
+{% block topbar_kicker %}FACTORY / LOCAL VALUATION{% endblock %}
+{% block page_title %}本地估值{% endblock %}
+{% block content %}
+<div class="page-heading"><div><span class="section-kicker">LOCAL VALUATION</span><h2 class="page-title">{{ current_org.name }}</h2><p class="page-lede">设置本企业在模拟协调中的收益与成本。参数适用于本企业后续生成的迭代方案。</p></div><span class="page-context">估值版本 v{{ profile.version }}</span></div>
+<div class="coordination-grid"><section class="form-card"><div class="form-card-head"><span class="form-step">{{ icon('layers',16) }}</span><div><h3>模拟函数参数</h3><p>{{ '尚未配置，显示默认值' if profile.version==0 else '本企业已保存的估值版本' }}</p></div></div><form method="post" class="coordination-form"><input type="hidden" name="_csrf_token" value="{{ csrf_token }}"><label class="field"><span class="field-label">需求收益系数 α</span><input class="input" type="number" name="alpha" value="{{ profile.alpha }}" min="0.001" max="1000000" step="any" required><span class="field-hint">需求侧：M(x) = Σ α ln(1 + x)</span></label><label class="field"><span class="field-label">供给线性成本 c</span><input class="input" type="number" name="linear" value="{{ profile.linear }}" min="0.001" max="1000000" step="any" required></label><label class="field"><span class="field-label">供给二次成本系数 β</span><input class="input" type="number" name="quadratic" value="{{ profile.quadratic }}" min="0.001" max="1000000" step="any" required><span class="field-hint">供给侧：N(y) = Σ (c y + β y² / 2)</span></label><button class="btn btn-primary" type="submit">保存本企业参数</button></form></section><aside class="panel coordination-explainer"><span class="section-kicker">FACTORY BOUNDARY</span><h3>企业侧反馈</h3><p>每轮分配后，本企业的模拟代理根据边际收益或成本返回买卖信号。协调器使用信号进行清算。</p><p>本页只读取和修改当前企业的参数。共享审计记录仅保留参数版本，不写入完整系数。</p><p class="form-hint">这些函数用于没有企业数据时的业务模拟。当前企业代理运行于同一台服务器，尚不构成跨组织的部署隔离或形式化隐私保证。</p></aside></div>
+{% endblock %}

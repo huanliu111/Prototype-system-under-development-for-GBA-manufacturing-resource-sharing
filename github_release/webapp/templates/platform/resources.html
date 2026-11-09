@@ -1,0 +1,84 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import status_badge, ledger_mode %}
+{% block title %}资源与供给{% endblock %}
+{% block topbar_kicker %}CAPACITY / SUPPLY{% endblock %}
+{% block page_title %}资源与供给{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <span class="section-kicker">CAPACITY SUPPLY</span>
+    <h2 class="page-title">可共享制造能力</h2>
+    <p class="page-lede">{{ '查看联盟内已登记的加工能力、共享窗口与可用数量。' if is_alliance_user else '管理本企业的加工能力、共享窗口与可用数量。' }}</p>
+  </div>
+  <span class="page-context">{{ current_org.name if current_org else '' }}</span>
+</div>
+
+{% if can('supply.write') %}
+<section class="form-card capacity-form">
+  <div class="form-card-head">
+    <span class="form-step">{{ icon('plus', 15) }}</span>
+    <div><h3>发布一个共享窗口</h3><p>填写扣除本地占用和储备后的可共享量，数量精度为 0.001；计量单位随能力类型变化。</p></div>
+  </div>
+  <form method="post" action="{{ url_for('platform.resources') }}" class="field-grid four">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+    <label class="field"><span class="field-label">站点 / 工厂</span><input class="input" name="site" value="{{ current_org.name if current_org else '' }}" placeholder="例如：东莞共享加工中心"></label>
+    <label class="field"><span class="field-label">能力类别</span><input class="input" name="capability" value="CNC-3AXIS" placeholder="CNC-3AXIS"></label>
+    <label class="field"><span class="field-label">开始时间</span><input class="input" type="datetime-local" name="window_start" value="{{ default_start }}" required></label>
+    <label class="field"><span class="field-label">结束时间</span><input class="input" type="datetime-local" name="window_end" value="{{ default_end }}" required></label>
+    <label class="field"><span class="field-label">可共享数量</span><input class="input" type="number" name="hours" value="4" min="0.001" step="0.001" required></label>
+    <label class="field"><span class="field-label">计量单位</span><input class="input" name="unit" value="机时"></label>
+    <label class="field field-span-2"><span class="field-label">备注</span><input class="input" name="note" placeholder="填写能力范围、质量条件或数据来源"></label>
+    <div class="field field-span-4 form-inline-submit">
+      <span class="form-hint">{{ icon('shield', 14) }} 发布后保留数量、窗口与版本记录。</span>
+      <button class="btn btn-primary btn-sm" type="submit">{{ icon('plus', 15) }} 发布供给</button>
+    </div>
+  </form>
+</section>
+{% else %}
+<div class="alert alert-info">{{ icon('info', 18) }} 当前岗位为只读/协调角色；资源发布由企业设备主管或计划员完成。</div>
+{% endif %}
+
+<section class="panel table-panel">
+  <div class="panel-head">
+    <div><span class="section-kicker">VISIBLE SUPPLY</span><h3>供给记录</h3></div>
+    {{ ledger_mode() }}
+  </div>
+  <form method="get" action="{{ url_for('platform.resources') }}" class="capability-filter">
+    <label class="field"><span class="field-label">按能力筛选</span><select class="input" name="capability" onchange="this.form.submit()"><option value="">全部能力（{{ catalog|length }} 类）</option>{% for item in catalog %}<option value="{{ item.code }}" {{ 'selected' if selected_capability==item.code }}>{{ item.code }} · {{ item.name }}（{{ item.unit }}）</option>{% endfor %}</select></label>
+    <noscript><button class="btn btn-ghost btn-sm" type="submit">筛选</button></noscript>
+    {% if selected_capability %}<a class="text-link" href="{{ url_for('platform.resources') }}">清除筛选</a>{% endif %}
+  </form>
+  {% if supplies %}
+    <div class="table-scroll">
+      <table class="data-table supply-table">
+        <thead><tr><th>能力 / 站点</th><th>企业</th><th>总能力</th><th>已预留</th><th>已消耗</th><th>可用</th><th>窗口</th><th>状态</th><th>版本</th></tr></thead>
+        <tbody>
+        {% for item in supplies %}
+          {% set available = item.total_milli - item.reserved_milli - item.consumed_milli %}
+          <tr>
+            <td><strong>{{ item.capability }}</strong><span class="table-sub">{{ item.site }} · {{ item.source }}</span></td>
+            <td>{{ item.org_name }}</td>
+            <td>{{ item.total_milli|hours(item.unit) }}</td>
+            <td>{{ item.reserved_milli|hours(item.unit) }}</td>
+            <td>{{ item.consumed_milli|hours(item.unit) }}</td>
+            <td><strong class="{{ 'teal-text' if available > 0 else 'danger-text' }}">{{ available|hours(item.unit) }}</strong></td>
+            <td>{{ item.window_start|datetime_cn('%m-%d %H:%M') }} – {{ item.window_end|datetime_cn('%m-%d %H:%M') }}</td>
+            <td>{{ status_badge(item.status) }}</td>
+            <td class="mono">v{{ item.version }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state large"><span class="empty-icon">{{ icon('layers', 28) }}</span><h4>还没有可共享供给</h4><p>由企业设备主管发布第一个能力窗口。</p></div>
+  {% endif %}
+</section>
+
+<div class="platform-note">
+  {{ icon('info', 16) }}
+  <p><strong>机时口径：</strong>1 机时 = 一台设备占用 1 小时；多台设备可累加。例如 30 台设备运行 8 小时 = 240 机时。当前 CNC-3AXIS 资源池按 80–240 机时展示，历史 2–5 机时任务只是小批量试制，不代表产能上限。</p>
+  <p><strong>占用口径：</strong>可用量 = 总能力 − 已预留 − 已消耗。已确认的承诺仍属于“已预留”，不会再次扣减；已消耗量不会在本窗口自动加回。</p>
+</div>
+{% endblock %}

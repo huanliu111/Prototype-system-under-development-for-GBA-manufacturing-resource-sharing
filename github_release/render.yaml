@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: bidshere-lab
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-web.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 "webapp:create_app()"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: WEB_SECRET_KEY
+        generateValue: true
+      - key: WEB_REVIEWER_PASSWORD
+        sync: false
+      - key: WEB_DEMO_PASSWORD
+        sync: false
+      - key: WEB_SHOW_DEMO_CREDENTIALS
+        value: "0"
+      - key: WEB_COOKIE_SECURE
+        value: "1"
+      - key: WEB_BEHIND_PROXY
+        value: "1"

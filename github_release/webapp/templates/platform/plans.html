@@ -1,0 +1,53 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import status_badge, ledger_mode %}
+{% block title %}协调方案{% endblock %}
+{% block topbar_kicker %}COORDINATION / PLANS{% endblock %}
+{% block page_title %}{{ '方案核查' if current_membership.role=='auditor' else ('协调方案' if is_alliance_user else '本企业分配结果') }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <span class="section-kicker">COORDINATION RUNS</span>
+    <h2 class="page-title">协调方案管理</h2>
+    <p class="page-lede">查看各协调策略生成的分配量、收支与预留状态。</p>
+  </div>
+  {% if can('demands.read') %}<a class="btn btn-ghost" href="{{ url_for('platform.demands') }}">{{ icon('flask', 15) }} 去需求中心</a>{% endif %}
+</div>
+
+<section class="panel table-panel">
+  <div class="panel-head">
+    <div><span class="section-kicker">PLAN LEDGER</span><h3>方案列表</h3></div>
+    {{ ledger_mode() }}
+  </div>
+  {% if plans %}
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>方案</th><th>需求</th><th>策略 / 版本</th><th>分配量</th><th>本方拟议金额</th><th>状态</th><th>创建时间</th></tr></thead>
+        <tbody>
+        {% for item in plans %}
+          <tr>
+            <td><a class="table-primary" href="{{ url_for('platform.plan_detail', plan_id=item.id) }}">PLAN-{{ '%04d'|format(item.id) }} {{ icon('arrow', 13) }}</a></td>
+            <td>{{ item.demand_title }}<span class="table-sub">需求 #{{ item.demand_id }}</span></td>
+            <td>{{ '迭代双向拍卖' if item.coordination_run_id else '固定参考价' }}<span class="table-sub mono">{{ item.algorithm_version }}</span></td>
+            <td>
+              {% set allocs = item.allocation_json|from_json %}
+              {{ (allocs|sum(attribute='qty_milli'))|hours(item.unit) }}
+            </td>
+            <td>{{ (item.proposed_payment_cents if item.proposed_payment_cents is not none else item.proposed_reward_cents)|money_cents }}</td>
+            <td>{{ status_badge(item.status) }}</td>
+            <td>{{ item.created_at|datetime_cn }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state large"><span class="empty-icon">{{ icon('spark', 28) }}</span><h4>还没有协调方案</h4><p>由联盟协调员在需求中心选择待协调需求并生成方案。</p></div>
+  {% endif %}
+</section>
+
+<div class="platform-note">
+  {{ icon('info', 16) }}
+  <p><strong>协调策略：</strong>迭代双向拍卖按本地估值反馈生成方案；固定参考价按可用容量分配。预留时核对资源版本及可用量，参与企业确认后进入执行。</p>
+</div>
+{% endblock %}

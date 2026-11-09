@@ -1,0 +1,12 @@
+{
+  "filename": "Manufacturing_resource_sharing_in_multiple_factory.tex",
+  "sha256": "8377a4d01d5156553238a66431dc937b2a63e83a095afae54341c68ea4d6a3f5",
+  "section": 6,
+  "equation_labels": [
+    "eq:auction_clearing",
+    "eq:valuation_response",
+    "eq:bid_ask_update",
+    "eq:payment_reward_rule",
+    "eq:no_crossing"
+  ]
+}

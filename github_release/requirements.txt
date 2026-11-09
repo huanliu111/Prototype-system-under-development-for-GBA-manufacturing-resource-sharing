@@ -1,0 +1,14 @@
+# Python 3.10+ is recommended. tkinter is provided by the Python/Conda build
+# (on macOS via the python.org or conda "tk" package) and is not installable
+# from PyPI.
+numpy>=1.23,<2
+pandas>=1.5,<2
+matplotlib>=3.7,<3.9
+scikit-learn>=1.2,<1.4
+seaborn>=0.12,<0.13
+scipy>=1.10,<1.12
+Pillow>=9
+plotly>=5,<6
+
+# Web prototype
+Flask>=2.2,<3

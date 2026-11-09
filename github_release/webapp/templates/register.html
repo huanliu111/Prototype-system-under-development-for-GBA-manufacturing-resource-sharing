@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% from "_brand.html" import brand with context %}
+{% block title %}企业注册{% endblock %}
+{% block body_class %}login-body{% endblock %}
+{% block body %}
+<div class="register-page">
+  <header class="register-topbar">
+    {{ brand(url_for('landing')) }}
+    <a class="link-back" href="{{ url_for('login') }}">← 返回登录</a>
+  </header>
+
+  <main class="register-shell">
+    <section class="register-intro">
+      <div class="eyebrow"><span class="eyebrow-dot"></span> 粤港澳大湾区 · 企业注册</div>
+      <h1>企业注册</h1>
+      <p>填写企业资料并创建首个管理员账号，登录后可发布资源、登记需求和处理共享任务。</p>
+      <div class="register-points">
+        <span>{{ icon('check', 16) }} 按企业与岗位管理权限</span>
+        <span>{{ icon('check', 16) }} 登记本企业供需</span>
+        <span>{{ icon('check', 16) }} 保留共享任务的操作记录</span>
+      </div>
+    </section>
+
+    <section class="register-card">
+      <span class="section-kicker">NEW FACTORY</span>
+      <h2>企业资料与账号</h2>
+      <p class="register-sub">当前环境使用合成业务数据与记账式结算。</p>
+      {% if error %}<div class="alert alert-error">{{ icon('alert', 18) }} {{ error }}</div>{% endif %}
+      <form method="post" action="{{ url_for('register') }}" class="stack-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+        <div class="field-grid two">
+          <label class="field"><span class="field-label">企业名称</span><input class="input" name="company_name" required maxlength="80" placeholder="例如：广州精工制造有限公司"></label>
+          <label class="field"><span class="field-label">所在地</span><input class="input" name="location" maxlength="40" placeholder="例如：广州"></label>
+          <label class="field"><span class="field-label">登录账号</span><input class="input" name="username" required maxlength="30" pattern="[A-Za-z0-9_]+" placeholder="小写字母、数字、下划线"></label>
+          <label class="field"><span class="field-label">操作人姓名</span><input class="input" name="display_name" required maxlength="40" placeholder="例如：张计划"></label>
+          <label class="field"><span class="field-label">初始角色</span>
+            <select class="input select" name="role">
+              <option value="factory_admin">企业管理员（可发布供给和登记需求）</option>
+              <option value="planner">计划员（登记需求）</option>
+              <option value="resource_manager">设备主管（发布供给）</option>
+            </select>
+          </label>
+          <label class="field"><span class="field-label">企业邀请码</span><input class="input" name="invite_code" required placeholder="输入企业邀请码"></label>
+          <label class="field"><span class="field-label">密码</span><input class="input" type="password" name="password" required minlength="8"></label>
+          <label class="field"><span class="field-label">确认密码</span><input class="input" type="password" name="password_confirm" required minlength="8"></label>
+        </div>
+        <div class="register-invite">
+          {{ icon('info', 15) }} 演示邀请码：<code>{{ invite_code }}</code>。
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">创建工厂并返回登录 {{ icon('arrow', 17) }}</button>
+      </form>
+    </section>
+  </main>
+  <footer class="register-footer">MIoT · 暨南大学制造物联网团队 · 合成业务数据环境</footer>
+</div>
+{% endblock %}

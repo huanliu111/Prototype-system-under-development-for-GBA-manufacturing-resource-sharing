@@ -1,0 +1,23 @@
+{% extends "layouts/public.html" %}
+{% from "_icons.html" import icon %}
+{% from "_gba_network.html" import gba_network %}
+{% block title %}平台首页 · MIoT{% endblock %}
+{% block content %}
+<main class="miot-home portal-home">
+  <div class="portal-heading"><div><h1>区域制造资源共享服务</h1><p>面向粤港澳大湾区制造企业，办理加工能力供需对接、共享协调、执行验收与结算追溯。</p></div><span>合成业务数据环境</span></div>
+  <div class="portal-overview">
+    <section class="portal-region"><div class="portal-region-head"><h2>粤港澳大湾区</h2><span>工厂之间的加工能力协同</span></div>{{ gba_network() }}</section>
+    <aside class="portal-services"><h2>资源共享服务</h2>
+      <a href="{{ url_for('platform.resources') }}">{{ icon('layers',20) }}<span>资源与供给<small>加工能力 · 时段 · 可用量</small></span>{{ icon('arrow',14) }}</a>
+      <a href="{{ url_for('platform.demands') }}">{{ icon('flask',20) }}<span>生产需求<small>能力缺口 · 数量 · 工艺</small></span>{{ icon('arrow',14) }}</a>
+      <a href="{{ url_for('platform.plans') }}">{{ icon('chart',20) }}<span>协调方案<small>分配结果 · 容量预留</small></span>{{ icon('arrow',14) }}</a>
+      <a href="{{ url_for('platform.commitments') }}">{{ icon('check',20) }}<span>共享任务<small>参与方确认 · 执行验收</small></span>{{ icon('arrow',14) }}</a>
+      <a href="{{ url_for('platform.trace') }}">{{ icon('shield',20) }}<span>结算与追溯<small>费用核对 · 操作记录</small></span>{{ icon('arrow',14) }}</a>
+    </aside>
+    <aside class="portal-access"><section><h2>企业与联盟工作台</h2><p>按企业和岗位处理供需、共享任务及协调业务。</p><a class="btn btn-primary btn-block" href="{{ url_for('platform.workspace') if current_user else url_for('login') }}">{{ '进入工作台' if current_user else '账号登录' }} {{ icon('arrow',15) }}</a>{% if not current_user %}<a class="portal-secondary" href="{{ url_for('register') }}">企业注册</a>{% endif %}</section>
+    <section><h2>算法与仿真</h2><p>选择资源共享方法，查看同一场景下的分配与结算结果。</p><a class="portal-method-link" href="{{ url_for('platform.algorithms') }}">共享算法对比 {{ icon('arrow',14) }}</a><a class="portal-method-link" href="{{ url_for('platform.coordination_trials') }}">估值反馈迭代 {{ icon('arrow',14) }}</a><a class="portal-method-link" href="{{ url_for('history') }}">连续拍卖独立演示 {{ icon('arrow',14) }}</a></section>
+    <a class="portal-help" href="{{ url_for('review_guide') }}">使用帮助 {{ icon('arrow',14) }}</a></aside>
+  </div>
+  <section class="portal-business-flow" id="capabilities"><h2>共享业务办理</h2><div><a href="{{ url_for('platform.resources') }}">发布资源</a><span>→</span><a href="{{ url_for('platform.demands') }}">登记需求</a><span>→</span><a href="{{ url_for('platform.plans') }}">协调与预留</a><span>→</span><a href="{{ url_for('platform.commitments') }}">确认与验收</a><span>→</span><a href="{{ url_for('platform.trace') }}">结算与追溯</a></div></section>
+</main>
+{% endblock %}

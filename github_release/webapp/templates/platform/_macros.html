@@ -1,0 +1,24 @@
+{% macro status_badge(status) -%}
+  {% set labels = {
+    'OPEN': '待协调', 'PLAN_READY': '已有方案', 'PHYSICAL_INFEASIBLE': '物理不可行',
+    'READY': '待预留', 'RESERVED': '已预留', 'EPOCH_INVALIDATED': '版本失效',
+    'CONFIRMED': '已确认', 'EXECUTED': '已执行', 'ACCEPTED': '已验收',
+    'ACCOUNTED': '已记账', 'CLOSED': '已关闭', 'PENDING': '待确认',
+    'BENCHMARK_READY':'基准已求解', 'ALLOCATION_FAILED':'分配失败', 'SUCCESS':'检查通过', 'NOT_CONVERGED':'未收敛', 'SETTLEMENT_INFEASIBLE':'结算不可行', 'SINGLE_SHOT':'单轮候选', 'FILTER_VIOLATION':'候选违约', 'UNVERIFIED_STATE':'未核验状态', 'QUANTIZATION_INFEASIBLE':'记录精度不可行', 'INPUT_UNSUPPORTED':'输入暂不支持', 'SOLVER_FAILED':'求解失败', 'SUPERSEDED':'已替换', 'CHECKED':'已检查', 'REJECTED':'未通过', 'ACTIVE': '可共享', 'NOT_CHECKED': '未检查', 'SIMULATED': '模拟结算'
+  } -%}
+  <span class="status-badge status-{{ status|lower|replace('_','-') }}">{{ labels.get(status, status) }}</span>
+{%- endmacro %}
+
+{% macro role_badge(role) -%}
+  {% set labels = {'planner':'计划员','resource_manager':'设备主管','coordinator':'平台协调员','auditor':'链路验证员','admin':'管理员','factory_admin':'企业管理员','buyer':'需求方','supplier':'供给方'} -%}
+  <span class="role-badge">{{ labels.get(role, role) }}</span>
+{%- endmacro %}
+
+{% macro ledger_mode() -%}
+  <span class="ledger-mode"><i></i> 本地审计账本</span>
+{%- endmacro %}
+
+{% macro event_label(event_type) -%}
+  {% set names = {'SYSTEM_INIT':'初始化业务环境', 'PLAN_FAILED':'方案生成失败', 'ORG_REGISTERED':'注册企业', 'EXECUTED':'执行完成', 'ACCEPTED':'验收完成', 'RESOURCE_PUBLISHED':'发布资源', 'DEMAND_REGISTERED':'登记需求', 'PLAN_GENERATED':'生成方案', 'CAPACITY_RESERVED':'预留容量', 'PARTY_CONFIRMED':'参与方确认', 'COMMITMENT_CONFIRMED':'承诺生效', 'EXECUTION_RECORDED':'登记执行', 'RESULT_ACCEPTED':'验收完成', 'SETTLEMENT_RECORDED':'登记结算', 'FACTORY_REGISTERED':'注册企业', 'ACCEPTANCE_RECORDED':'登记验收', 'RESOURCE_UPDATED':'更新资源', 'VALUATION_UPDATED':'更新本地估值'} -%}
+  {{ names.get(event_type, event_type) }}
+{%- endmacro %}

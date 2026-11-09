@@ -1,0 +1,29 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import status_badge %}
+{% block title %}迭代协调{% endblock %}
+{% block topbar_kicker %}COORDINATION / SIMULATION{% endblock %}
+{% block page_title %}迭代协调{% endblock %}
+{% block content %}
+<a class="link-back" href="{{ url_for('platform.algorithms') }}">← 算法与仿真</a>
+<div class="page-heading"><div><span class="section-kicker">ITERATIVE DOUBLE AUCTION</span><h2 class="page-title">观察一轮供需协调</h2><p class="page-lede">选择模拟场景，查看估值反馈、分配量与结算检查的逐轮变化。</p></div><a class="btn btn-ghost" href="{{ url_for('platform.demands') }}">前往业务需求 {{ icon('arrow', 15) }}</a></div>
+<div class="coordination-grid">
+  <section class="form-card">
+    <div class="form-card-head"><span class="form-step">{{ icon('chart', 16) }}</span><div><h3>运行模拟</h3><p>使用与业务方案相同的求解模块；模拟运行单独记录，不占用业务容量。</p></div></div>
+    <form method="post" class="coordination-form">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+      <fieldset class="trial-cases"><legend>供需场景</legend>{% for key,case in cases.items() %}<label class="trial-case"><input type="radio" name="case" value="{{ key }}" {{ 'checked' if loop.first }}><span><strong>{{ case.label }}</strong><small>{{ case.description }}</small></span></label>{% endfor %}</fieldset>
+      <div class="field-grid two">
+        <label class="field"><span class="field-label">松弛系数 ρ</span><input class="input" name="rho" type="number" value="0.2" min="0.001" max="1" step="0.001" required></label>
+        <label class="field"><span class="field-label">正则常数 δ</span><input class="input" name="delta" type="number" value="0.1" min="0.000001" step="any" required></label>
+        <label class="field"><span class="field-label">固定点残差容差</span><input class="input" name="tolerance" type="number" value="0.000001" min="0.0000000001" max="0.1" step="any" required></label>
+        <label class="field"><span class="field-label">最大迭代轮数</span><input class="input" name="max_iterations" type="number" value="400" min="1" max="2000" required></label>
+      </div>
+      <p class="form-hint">成本快速变化场景可尝试 ρ = 1，比较其与小步长的运行结果。默认时限 30 秒，在每轮清算结束后检查；超时保留已有轨迹。</p>
+      <button class="btn btn-primary" type="submit" data-running-label="正在迭代…">{{ icon('play', 16) }} 开始协调</button>
+    </form>
+  </section>
+  <aside class="panel coordination-explainer"><span class="section-kicker">HOW IT RUNS</span><h3>从本地估值到协调结果</h3><ol class="coordination-steps"><li><strong>清算</strong><p>协调器使用买卖信号，在最低需求与供给容量约束下求解分配。</p></li><li><strong>反馈</strong><p>企业侧模拟代理根据分配量计算边际收益或成本，返回下一轮信号。</p></li><li><strong>松弛更新</strong><p>按 ρ 更新信号，持续检查固定点残差。</p></li><li><strong>结算检查</strong><p>达到容差后检查每条执行关系的买卖价差、平台收支与参与方收益。</p></li></ol><p class="form-hint">默认模拟采用对数收益和二次成本。运行结果保留失败状态与未收敛轨迹，可导出用于分析。</p></aside>
+</div>
+<section class="panel table-panel"><div class="panel-head"><div><span class="section-kicker">RUN HISTORY</span><h3>我的模拟记录</h3></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>运行</th><th>场景</th><th>状态</th><th>轮数</th><th>时间</th></tr></thead><tbody>{% for run in runs %}{% set result=run.result_json|from_json %}{% set snapshot=run.snapshot_json|from_json %}<tr><td><a class="table-primary" href="{{ url_for('platform.coordination_detail',run_id=run.id) }}">RUN-{{ '%04d'|format(run.id) }} {{ icon('arrow',13) }}</a></td><td>{{ snapshot.label }}</td><td>{{ status_badge(run.status) }}</td><td>{{ result.iterations }}</td><td>{{ run.created_at|datetime_cn }}</td></tr>{% else %}<tr><td colspan="5" class="table-sub">还没有运行记录。选择场景后开始第一次协调。</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

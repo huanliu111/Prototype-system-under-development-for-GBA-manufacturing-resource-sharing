@@ -1,0 +1,12 @@
+{% extends "layouts/app.html" %}{% from "_icons.html" import icon %}
+{% block title %}本岗位使用帮助{% endblock %}{% block page_title %}本岗位使用帮助{% endblock %}
+{% block content %}<article class="miot-document"><header><h2>{{ workspace_title }}使用帮助</h2><p>当前企业或组织：{{ current_org.name }}</p></header>
+{% if not is_alliance_user %}
+<section><h3>本企业业务</h3><p>资源与需求列表只显示本企业记录。分配结果与共享任务仅显示本企业参与的业务。</p>{% if can('demand.write') %}<p>在“本企业需求”中登记能力类别、最低需求量、交付窗口和质量要求。收到共享任务后确认本方承诺，执行完成后登记验收。</p>{% endif %}<p>在“本企业资源与供给”中登记净可共享能力与时段；作为供给方参与任务时，确认本方承诺并登记本企业执行结果。</p><p>需求方可查看本方付款，供给方可查看本方应收金额；本企业结算与记录中保留相关业务事件。</p></section>
+{% elif current_membership.role=='auditor' %}
+<section><h3>只读核查</h3><p>通过“方案核查”和“共享任务核查”核对分配依据、参与方确认、执行验收与结算记录。</p><p>通过“审计追溯”查看授权的业务事件、校验原始记录摘要链并导出审计数据。链路验证岗位不办理企业操作、方案生成、容量预留或结算登记。</p></section>
+{% else %}
+<section><h3>平台协调</h3><p>查看联盟资源和待协调需求，选择分配策略生成方案；核对结果后预留容量，由各参与企业自行确认并履约。验收完成后登记记账式结算。</p><p>“算法与仿真”用于合成场景的算法比较，不预留业务资源；集中式福利基准不包含支付机制。</p></section>
+{% endif %}
+<section><h3>任务状态</h3><p>已预留：等待参与方确认；已确认：可进入执行；已执行：等待验收；已验收：等待结算；已记账：结算记录已生成。</p></section>
+<a class="btn btn-primary" href="{{ url_for('platform.workspace') }}">返回本岗位工作台 {{ icon('arrow',16) }}</a></article>{% endblock %}

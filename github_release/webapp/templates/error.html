@@ -1,0 +1,18 @@
+{% extends "layouts/public.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}{{ code }} · {{ title }}{% endblock %}
+{% block content %}
+<main class="error-page">
+  <div class="error-card">
+    <span class="error-code">{{ code }}</span>
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+    <div class="error-actions">
+      <a class="btn btn-primary" href="{{ url_for('dashboard') if current_user else url_for('landing') }}">
+        {{ '返回工作台' if current_user else '返回首页' }} {{ icon('arrow', 16) }}
+      </a>
+      {% if not current_user %}<a class="btn btn-ghost" href="{{ url_for('login') }}">去登录</a>{% endif %}
+    </div>
+  </div>
+</main>
+{% endblock %}

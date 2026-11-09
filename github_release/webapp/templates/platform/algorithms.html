@@ -1,0 +1,42 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import status_badge %}
+{% block title %}算法与仿真{% endblock %}
+{% block page_title %}算法与仿真{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h2 class="page-title">资源共享算法演示</h2><p class="page-lede">使用同一组需求、容量和估值函数，查看不同方法的分配与结算结果。</p></div><a class="btn btn-ghost" href="{{ url_for('platform.demands') }}">业务需求 {{ icon('arrow',15) }}</a></div>
+<div class="algorithm-main-grid">
+<section class="form-card"><div class="form-card-head"><div><h3>同场景对比</h3><p>连续机时模型；本次运行不占用业务资源。</p></div></div>
+<form action="{{ url_for('platform.compare_algorithms') }}" method="post" class="coordination-form">
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+  <label class="field"><span class="field-label">共享场景</span><select class="input" name="case">{% for key,case in cases.items() %}<option value="{{ key }}">{{ case.label }}</option>{% endfor %}</select></label>
+  <p class="form-hint case-description">候选筛选和状态核验消融分别选择“候选筛选对比”“过期状态”场景；在其他场景中它们不产生额外差异。</p>
+
+  <fieldset class="algorithm-methods"><legend>选择方法</legend>
+    {% for group_key, group_label in [('proposed','论文方法'),('baseline','对比基线'),('benchmark','福利基准'),('ablation','消融实验')] %}
+    <div class="method-group">
+      <div class="method-group-title">{{ group_label }}</div>
+      {% for key,method in methods.items() if method.group == group_key %}
+      <label class="method-option"><input type="checkbox" name="methods" value="{{ key }}" {% if group_key != 'ablation' %}checked{% endif %}><span><strong>{{ method.label }}</strong><small>{{ method.description }}</small></span></label>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </fieldset>
+  <details class="algorithm-parameters"><summary>运行参数</summary><div class="field-grid two">
+    <label class="field"><span class="field-label">松弛系数 ρ</span><input class="input" type="number" name="rho" value="0.2" min="0.001" max="1" step="any" required></label>
+    <label class="field"><span class="field-label">正则常数 δ</span><input class="input" type="number" name="delta" value="0.1" min="0.000001" step="any" required></label>
+    <label class="field"><span class="field-label">迭代轮数上限</span><input class="input" type="number" name="max_iterations" value="400" min="1" max="2000" required></label>
+    <label class="field"><span class="field-label">固定参考价（元/机时）</span><input class="input" type="number" name="reference_price" value="120" min="0" max="1000000" step="any" required></label>
+  </div><p class="form-hint">迭代容差为 1e-6。参考价仅用于固定参考价方法；集中式基准不计算付款与奖励。</p></details>
+  <button class="btn btn-primary" type="submit">{{ icon('play',16) }} 运行所选方法</button>
+</form></section>
+<aside class="panel algorithm-library"><h3>方法口径</h3>
+  <div><h4>论文方法</h4><p>保留边际反馈、清算和松弛更新；最低需求、版本、结算和失败状态都保留。</p><a class="text-link" href="{{ url_for('platform.coordination_trials') }}">单独运行与查看轨迹 {{ icon('arrow',14) }}</a></div>
+  <div><h4>对比基线</h4><p>规则匹配和单边供给拍卖均使用同一物理约束。它们不是论文机制，不能把差异写成论文算法证明。</p></div>
+  <div><h4>消融实验</h4><p>无迭代、无候选筛选、无状态核验分别只改变一个环节；对应场景才具有解释力。</p></div>
+  <div><h4>集中式基准</h4><p>用完整合成估值函数求解福利上界；不定义支付，也不代表可以成交。</p></div>
+</aside>
+</div>
+<section class="panel legacy-method"><div><h3>连续双向拍卖 · 独立模型</h3><p>保留原有逐单位报价工具。供需阶梯曲线和均衡价格来自离散单位估值与成本，与上方的连续机时模型分别记录。</p></div><a class="btn btn-ghost" href="{{ url_for('platform.cda_demo') }}">打开连续拍卖 {{ icon('arrow',15) }}</a></section>
+<section class="panel table-panel"><div class="panel-head"><h3>我的对比记录</h3></div><div class="table-scroll"><table class="data-table"><thead><tr><th>运行</th><th>场景</th><th>方法数量</th><th>输入摘要</th><th>时间</th></tr></thead><tbody>{% for item in comparisons %}{% set snapshot=item.snapshot_json|from_json %}{% set result=item.result_json|from_json %}<tr><td><a class="table-primary" href="{{ url_for('platform.comparison_detail',comparison_id=item.id) }}">CMP-{{ '%04d'|format(item.id) }} {{ icon('arrow',13) }}</a></td><td>{{ snapshot.label }}</td><td>{{ result.outcomes|length }}</td><td class="mono">{{ item.input_hash[:12] }}</td><td>{{ item.created_at|datetime_cn }}</td></tr>{% else %}<tr><td colspan="5">还没有对比记录。</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

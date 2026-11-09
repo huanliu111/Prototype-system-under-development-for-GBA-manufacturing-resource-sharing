@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% from "_brand.html" import brand with context %}
+{% block body_class %}public-body{% endblock %}
+{% block body %}<div class="public-shell"><header class="public-nav">{{ brand(url_for('login')) }}</header>{% include "_flash.html" %}{% block content %}{% endblock %}<footer class="public-footer"><p><strong>MIoT</strong> · 暨南大学制造物联网团队</p><span>粤港澳大湾区制造资源协同服务平台</span></footer></div>{% endblock %}

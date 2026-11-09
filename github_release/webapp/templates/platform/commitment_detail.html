@@ -1,0 +1,164 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import status_badge, ledger_mode, event_label %}
+{% block title %}承诺 {{ commitment.ref }}{% endblock %}
+{% block topbar_kicker %}COMMITMENT / DETAIL{% endblock %}
+{% block page_title %}共享承诺{% endblock %}
+{% block content %}
+{% set show_payment=is_alliance_user or plan.demand_org_id==current_membership.org_id %}
+{% set show_reward=is_alliance_user or plan.demand_org_id!=current_membership.org_id %}
+<header class="result-header">
+  <div class="result-title-block">
+    <a class="link-back" href="{{ url_for('platform.commitments') }}">← 返回共享任务</a>
+    <div class="result-title-row">
+      <h2>{{ commitment.ref }}</h2>
+      {{ status_badge(commitment.status) }}
+      <span class="badge badge-teal"><i class="status-dot"></i> 合成业务数据</span>
+    </div>
+    <div class="result-meta">
+      <span>{{ icon('users', 15) }} {{ commitment.total_milli|hours(commitment.unit) }}</span>
+      <span>{{ icon('clock', 15) }} {{ commitment.window_start|datetime_cn('%m-%d %H:%M') }} – {{ commitment.window_end|datetime_cn('%m-%d %H:%M') }}</span>
+      <span>{{ icon('shield', 15) }} 业务版本 v{{ commitment.version }}</span>
+    </div>
+  </div>
+  <div class="result-actions">
+    {{ ledger_mode() }}
+  </div>
+</header>
+
+<div class="commitment-flow" aria-label="共享承诺流程">
+  {% set steps = [('RESERVED', '预留'), ('CONFIRMED', '确认'), ('EXECUTED', '执行'), ('ACCEPTED', '验收'), ('ACCOUNTED', '记账')] %}
+  {% set step_keys = ['RESERVED', 'CONFIRMED', 'EXECUTED', 'ACCEPTED', 'ACCOUNTED'] %}
+  {% set progress = step_keys.index(commitment.status) if commitment.status in step_keys else -1 %}
+  {% for key, label in steps %}
+    <div class="flow-step {{ 'done' if loop.index0 < progress }} {{ 'current' if commitment.status == key }}">
+      <span>{{ loop.index }}</span><strong>{{ label }}</strong>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="result-grid">
+  <section class="panel table-panel">
+    <div class="panel-head">
+      <div><span class="section-kicker">ALLOCATION</span><h3>容量与结算依据</h3></div>
+      <span class="chart-caption">{{ allocations|length }} 个供给关系</span>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>供给方</th><th>数量</th>{% if show_payment %}<th>{{ '等效付款单价' if plan.coordination_run_id else '单价' }}</th><th>拟议付款</th>{% endif %}{% if show_reward %}<th>拟议奖励</th>{% endif %}<th>实际用量</th></tr></thead>
+        <tbody>
+        {% for item in allocations %}
+          <tr>
+            <td>{{ item.supplier_name }}<span class="table-sub">{{ item.supplier_site }}</span></td>
+            <td>{{ item.qty_milli|hours(commitment.unit) }}</td>
+            {% if show_payment %}<td>¥{{ (item.unit_price_cents / 100)|money }}/{{ commitment.unit }}</td><td>{{ item.proposed_payment_cents|money_cents }}</td>{% endif %}{% if show_reward %}<td>{{ item.proposed_reward_cents|money_cents }}</td>{% endif %}
+            <td>{{ item.actual_milli|hours(commitment.unit) if item.actual_milli else '—' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="settlement-strip">
+      {% if show_payment %}<div><span>本方拟议付款</span><strong>{{ plan.proposed_payment_cents|money_cents }}</strong></div>{% endif %}
+      {% if show_reward %}<div><span>拟议应收金额</span><strong>{{ plan.proposed_reward_cents|money_cents }}</strong></div>{% endif %}
+      <div><span>执行后实际用量</span><strong>{{ allocations|sum(attribute='actual_milli')|hours(commitment.unit) }}</strong></div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="panel-head"><div><span class="section-kicker">PARTIES</span><h3>参与方确认</h3></div></div>
+    <div class="party-list">
+      {% for party in parties %}
+        <div class="party-row">
+          <span class="party-role {{ party.role }}">{{ '需求方' if party.role == 'buyer' else '供给方' }}</span>
+          <div>
+            <strong>{{ party.org_name }}</strong>
+            <span>{{ party.confirmed_at|datetime_cn if party.confirmed_at else '等待本方确认同一版本' }}</span>
+          </div>
+          {{ status_badge(party.confirm_status) }}
+        </div>
+      {% endfor %}
+    </div>
+    {% if can('task.confirm') and my_party and (my_party.role!='buyer' or can('task.confirm_buyer')) and commitment.status == 'RESERVED' and my_party.confirm_status != 'CONFIRMED' %}
+      <form method="post" action="{{ url_for('platform.confirm', commitment_id=commitment.id) }}" class="commitment-action">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+        <button class="btn btn-primary btn-block" type="submit">{{ icon('check', 16) }} 以 {{ my_party.org_name }} 身份确认</button>
+        <span class="form-hint">确认绑定当前业务版本 v{{ commitment.version }}；不能用其他企业身份代确认。</span>
+      </form>
+    {% elif all_confirmed %}
+      <div class="alert alert-info compact-alert">{{ icon('check', 16) }} 参与企业已全部确认，可以按约定进入执行。</div>
+    {% elif not my_party %}
+      <div class="alert alert-info compact-alert">{{ icon('info', 16) }} 当前为协调/审计视角，不能代替参与企业确认。</div>
+    {% endif %}
+  </aside>
+</div>
+
+<div class="platform-lower-grid">
+  <section class="panel table-panel">
+    <div class="panel-head"><div><span class="section-kicker">EXECUTION</span><h3>执行与验收</h3></div></div>
+    {% if can('task.execute') and is_supplier and commitment.status == 'CONFIRMED' and not own_executed %}
+      <form method="post" action="{{ url_for('platform.execute', commitment_id=commitment.id) }}" class="inline-action-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+        <label class="field"><span class="field-label">实际用量（{{ commitment.unit }}）</span><input class="input" type="number" name="actual_hours" value="{{ (own_total_milli / 1000)|round(3) }}" step="0.001" min="0.001" required></label>
+        <label class="field"><span class="field-label">执行说明</span><input class="input" name="note" placeholder="例如：加工完成，等待验收"></label>
+        <button class="btn btn-primary btn-sm" type="submit">{{ icon('play', 15) }} 登记本企业执行</button>
+      </form>
+    {% elif can('task.accept') and is_buyer and commitment.status == 'EXECUTED' %}
+      <form method="post" action="{{ url_for('platform.accept', commitment_id=commitment.id) }}" class="inline-action-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+        <label class="field"><span class="field-label">验收说明</span><input class="input" name="note" placeholder="填写数量、质量与交付检查结果"></label>
+        <button class="btn btn-primary btn-sm" type="submit">{{ icon('check', 15) }} 验收</button>
+      </form>
+    {% elif can('settlement.write') and commitment.status == 'ACCEPTED' %}
+      <form method="post" action="{{ url_for('platform.settle', commitment_id=commitment.id) }}" class="inline-action-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+        <div class="settlement-copy"><strong>记账式模拟结算</strong><span>不会发起真实付款；仅形成应收应付和证据记录。</span></div>
+        <button class="btn btn-primary btn-sm" type="submit">{{ icon('shield', 15) }} 登记结算</button>
+      </form>
+    {% else %}
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>事件</th><th>数量</th><th>说明</th><th>时间</th></tr></thead>
+          <tbody>
+          {% for item in executions %}
+            <tr><td>{{ event_label(item.event_type) }}</td><td>{{ item.qty_milli|hours(commitment.unit) }}</td><td>{{ item.note or '—' }}</td><td>{{ item.created_at|datetime_cn }}</td></tr>
+          {% else %}
+            <tr><td colspan="4" class="table-sub">尚无执行事件。供给方在双方确认后登记执行结果。</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="panel table-panel">
+    <div class="panel-head"><div><span class="section-kicker">SETTLEMENT & EVIDENCE</span><h3>结算与账本回执</h3></div><span class="ledger-mode"><i></i> 本地记录</span></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>阶段</th><th>金额</th><th>状态</th><th>时间</th></tr></thead>
+        <tbody>
+        {% for item in settlements %}
+          <tr><td>{{ item.stage }}</td><td>{{ item.amount_cents|money_cents }}</td><td>{{ status_badge(item.status) }}</td><td>{{ item.created_at|datetime_cn }}</td></tr>
+        {% else %}
+          <tr><td colspan="4" class="table-sub">验收后由联盟协调员生成记账式结算。</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="evidence-list compact-evidence">
+      {% for event in events %}
+        <div class="evidence-row">
+          <span class="evidence-dot"></span>
+          <div><strong>{{ event_label(event.event_type) }}</strong><span>{{ event.created_at|datetime_cn }}</span></div>
+          <code>{{ event.tx_id }}</code>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<div class="platform-note">
+  {{ icon('shield', 16) }}
+  <p><strong>记录来源：</strong>本地审计账本。可在结算与追溯中查看完整操作记录。</p>
+</div>
+{% endblock %}

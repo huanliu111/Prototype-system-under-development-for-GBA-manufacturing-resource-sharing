@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% from "_brand.html" import brand with context %}
+{% from "_gba_network.html" import gba_network %}
+{% block title %}{{ t('login.title') }}{% endblock %}
+{% block body_class %}login-body{% endblock %}
+{% block body %}
+<div class="miot-login-page">
+  <header class="miot-login-header">
+    {{ brand(url_for('login')) }}
+    <a class="language-switch" href="{{ url_for('set_language', lang=('en' if lang == 'zh' else 'zh'), next=request.path) }}" aria-label="{{ t('login.language_aria') }}">{{ t('login.language') }}</a>
+  </header>
+  <main class="miot-login-main">
+    <div class="miot-login-context">
+    <section class="miot-login-intro"><p class="gba-region">{{ t('login.region') }}</p><h1>{{ t('login.hero') }}</h1><p class="gba-login-description">{{ t('login.description') }}</p></section>
+    <div class="gba-login-network">{{ gba_network() }}</div>
+    </div>
+    <section class="miot-login-form">
+      <div class="login-form-heading"><h2>{{ t('login.heading') }}</h2><span class="login-lang-inline">{{ 'EN' if lang == 'en' else '中文' }}</span></div><p class="miot-muted">{{ t('login.subtitle') }}</p>
+      {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert', 18) }}<span>{{ error }}</span></div>{% endif %}
+      <form method="post" action="{{ url_for('login') }}" class="stack-form" data-login-form>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+        <label class="field"><span class="field-label">{{ t('login.account') }}</span><input class="input" type="text" name="username" autocomplete="username" required value="{{ prefill_username }}" placeholder="{{ t('login.account_placeholder') }}" autofocus></label>
+        <label class="field"><span class="field-label">{{ t('login.password') }}</span><div class="password-wrap"><input class="input" type="password" name="password" autocomplete="current-password" required placeholder="{{ t('login.password_placeholder') }}" id="login-password"><button class="password-toggle" type="button" data-password-toggle data-show-label="{{ t('login.show') }}" data-hide-label="{{ t('login.hide') }}" aria-label="{{ t('login.show') }}">{{ t('login.show') }}</button></div></label>
+        <button class="btn btn-primary btn-block" type="submit">{{ t('login.submit') }} {{ icon('arrow', 16) }}</button>
+      </form>
+      {% if demo_accounts %}
+      <section class="login-demo-accounts" aria-labelledby="demo-accounts-title">
+        <div class="login-demo-heading"><h3 id="demo-accounts-title">{{ t('login.test_accounts') }}</h3><span>{{ t('login.switch_hint') }}</span></div>
+        <div class="login-demo-scroll"><table class="login-demo-table"><thead><tr><th>{{ t('login.columns.company_role') }}</th><th>{{ t('login.columns.account') }}</th><th>{{ t('login.columns.password') }}</th><th><span class="sr-only">{{ t('login.enter') }}</span></th></tr></thead><tbody>
+        {% for account in demo_accounts %}<tr><td>{{ t('login.role.' ~ account.username) }}</td><td>{{ account.username }}</td><td>{{ account.password if account.password else '已自设密码' }}</td><td>{% if account.password %}<button class="login-demo-button" type="button" data-demo-fill="{{ account.username }}" data-demo-password="{{ account.password }}" data-demo-login aria-label="{{ t('login.enter') }} {{ t('login.role.' ~ account.username) }}">{{ t('login.enter') }}</button>{% endif %}</td></tr>{% endfor %}
+        </tbody></table></div>
+      </section>
+      {% else %}<p class="form-hint">{{ t('login.no_accounts') }}</p>{% endif %}
+      <p class="miot-login-environment">{{ t('login.environment') }}</p>
+    </section>
+  </main>
+  <footer class="miot-login-footer">{{ t('login.footer') }}</footer>
+</div>
+{% endblock %}

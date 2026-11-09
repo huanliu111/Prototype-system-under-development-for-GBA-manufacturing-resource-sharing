@@ -1,0 +1,91 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import status_badge, ledger_mode %}
+{% block title %}需求中心{% endblock %}
+{% block topbar_kicker %}DEMAND / GAP{% endblock %}
+{% block page_title %}需求中心{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <span class="section-kicker">PRODUCTION GAP</span>
+    <h2 class="page-title">生产缺口与共享需求</h2>
+    <p class="page-lede">登记任务的能力要求、最低需要量和交付窗口，查看协调进度。</p>
+  </div>
+  <span class="page-context">{{ current_org.name if current_org else '' }}</span>
+</div>
+
+{% if can('demand.write') %}
+<section class="form-card capacity-form">
+  <div class="form-card-head">
+    <span class="form-step">{{ icon('flask', 15) }}</span>
+    <div><h3>登记一个生产缺口</h3><p>按一种加工能力和一个共享窗口登记最低需要量，可由多个工厂共同提供。</p></div>
+  </div>
+  <form method="post" action="{{ url_for('platform.demands') }}" class="field-grid four">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+    <label class="field field-span-2"><span class="field-label">需求 / 任务名称</span><input class="input" name="title" value="新能源电池夹具加工" required></label>
+    <label class="field"><span class="field-label">站点 / 工厂</span><input class="input" name="site" value="{{ current_org.name if current_org else '' }}"></label>
+    <label class="field"><span class="field-label">能力类别</span><input class="input" name="capability" value="CNC-3AXIS" required></label>
+    <label class="field"><span class="field-label">开始时间</span><input class="input" type="datetime-local" name="window_start" value="{{ default_start }}" required></label>
+    <label class="field"><span class="field-label">结束时间</span><input class="input" type="datetime-local" name="window_end" value="{{ default_end }}" required></label>
+    <label class="field"><span class="field-label">硬最低量</span><input class="input" type="number" name="hours" value="3" min="0.001" step="0.001" required></label>
+    <label class="field"><span class="field-label">参考结算价（¥/单位）</span><input class="input" type="number" name="reference_price" value="120" min="0" step="0.01"></label>
+    <label class="field field-span-2"><span class="field-label">质量 / 工艺条件</span><input class="input" name="quality" value="IT7 / Ra1.6" placeholder="例如：IT7 / Ra1.6"></label>
+    <label class="field field-span-2"><span class="field-label">备注</span><input class="input" name="note" placeholder="填写缺口来源或其他要求"></label>
+    <div class="field field-span-4 form-inline-submit">
+      <span class="form-hint">{{ icon('info', 14) }} 需求登记不等于已获得供给，也不等于已形成承诺。</span>
+      <button class="btn btn-primary btn-sm" type="submit">{{ icon('plus', 15) }} 登记需求</button>
+    </div>
+  </form>
+  <datalist id="unit-options"><option value="机时"><option value="模次"><option value="件"><option value="炉时"><option value="槽时"><option value="工位时"><option value="克"></datalist>
+</section>
+{% else %}
+<div class="alert alert-info">{{ icon('info', 18) }} 当前岗位为只读/协调角色；生产需求由企业计划员登记。</div>
+{% endif %}
+
+<section class="panel table-panel">
+  <div class="panel-head">
+    <div><span class="section-kicker">VISIBLE DEMAND</span><h3>需求记录</h3></div>
+    {{ ledger_mode() }}
+  </div>
+  {% if demands %}
+    <div class="table-scroll">
+      <table class="data-table demand-table">
+        <thead><tr><th>需求</th><th>企业 / 站点</th><th>能力</th><th>硬最低量</th><th>窗口</th><th>质量</th><th>状态</th><th>动作</th></tr></thead>
+        <tbody>
+        {% for item in demands %}
+          <tr id="demand-{{ item.id }}">
+            <td><strong>{{ item.title }}</strong><span class="table-sub">需求 #{{ item.id }} · 参考价 ¥{{ (item.reference_price_cents / 100)|money }}/{{ item.unit }}</span></td>
+            <td>{{ item.org_name }}<span class="table-sub">{{ item.site }}</span></td>
+            <td class="mono">{{ item.capability }}</td>
+            <td><strong>{{ item.required_milli|hours(item.unit) }}</strong></td>
+            <td>{{ item.window_start|datetime_cn('%m-%d %H:%M') }} – {{ item.window_end|datetime_cn('%m-%d %H:%M') }}</td>
+            <td>{{ item.quality or '—' }}</td>
+            <td>{{ status_badge(item.status) }}</td>
+            <td>
+              {% if can('coordination.write') and item.status in ['OPEN','PLAN_READY'] %}
+                <form method="post" action="{{ url_for('platform.create_plan', demand_id=item.id) }}" class="inline-form">
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                  <select class="input strategy-select" name="strategy" aria-label="需求 {{ item.id }} 的协调策略"><option value="paper-iterative-double-auction">迭代双向拍卖</option><option value="manual-s1">固定参考价</option></select>
+                  <button class="btn btn-xs btn-soft" type="submit">生成方案</button>
+                </form>
+              {% elif can('coordination.write') %}
+                <a class="text-link" href="{{ url_for('platform.plans') }}">查看方案 {{ icon('arrow', 13) }}</a>
+              {% else %}
+                <span class="table-sub">由协调员处理</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state large"><span class="empty-icon">{{ icon('flask', 28) }}</span><h4>还没有生产需求</h4><p>由企业计划员登记第一个能力缺口。</p></div>
+  {% endif %}
+</section>
+
+<div class="platform-note">
+  {{ icon('info', 16) }}
+  <p><strong>填报说明：</strong>本页用于可拆分的加工能力需求；不同能力类别或不同窗口请分别登记。迭代方案将同能力、同单位、同窗口的待协调需求纳入一轮；每家企业在本轮只承担一种角色。</p>
+</div>
+{% endblock %}

@@ -1,0 +1,777 @@
+/* Locally installed fonts only; no proprietary font binaries in this project. */
+@font-face {
+  font-family: "MIoT Latin"; src: local("Times New Roman"), local("TimesNewRomanPSMT");
+  font-style: normal; font-weight: 400; font-display: swap;
+  unicode-range: U+0000-024F, U+0370-03FF, U+1E00-1EFF, U+2000-206F, U+20A0-20CF;
+}
+@font-face {
+  font-family: "MIoT Latin"; src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT");
+  font-style: normal; font-weight: 700; font-display: swap;
+  unicode-range: U+0000-024F, U+0370-03FF, U+1E00-1EFF, U+2000-206F, U+20A0-20CF;
+}
+@font-face {
+  font-family: "MIoT Latin"; src: local("Times New Roman Italic"), local("TimesNewRomanPS-ItalicMT");
+  font-style: italic; font-weight: 400; font-display: swap;
+  unicode-range: U+0000-024F, U+0370-03FF, U+1E00-1EFF, U+2000-206F, U+20A0-20CF;
+}
+/* MIoT interface. Keep operational screens concise and task-focused. */
+:root {
+  --font: "MIoT Latin", "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+  --mono: var(--font);
+  --ink: #000000; --ink-2: #000000; --ink-3: #000000;
+  --muted: #000000; --muted-2: #000000;
+  --line: #dfe6e2; --line-strong: #c7d2cc;
+  --bg: #f4f6f5; --surface-soft: #f7f9f8;
+  --teal: #175d58; --teal-strong: #104c47;
+  --teal-soft: #dbece6; --teal-pale: #edf4f0;
+  --radius: 6px; --radius-sm: 4px; --shadow: none; --shadow-sm: none;
+}
+body { font-size: 18px; line-height: 1.7; background: var(--bg); }
+.app-body { background: var(--bg); }
+h1, h2, h3, h4 { letter-spacing: 0 !important; }
+.btn, .input, .icon-btn { border-radius: 4px; }
+.btn { font-weight: 600; box-shadow: none; transition: background .15s, border-color .15s; }
+.btn:hover, .scenario-card:hover { transform: none; box-shadow: none; }
+.btn-primary { background: var(--teal); box-shadow: none; }
+.btn-primary:hover { background: var(--teal-strong); box-shadow: none; }
+.btn-ghost { box-shadow: none; }
+.btn-soft { background: var(--teal-pale); border-color: #cbded4; }
+.btn-soft:hover { background: #dfece5; }
+.btn-light { box-shadow: none; }
+.input { font-size: 16px; min-height: 40px; }
+.input::placeholder { color: #000000; }
+.field-label { font-size: 16px; font-weight: 500; }
+.text-gradient, .text-gradient-light { background: none; color: inherit; }
+a:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
+.miot-brand { display: inline-flex; gap: 16px; align-items: center; flex-shrink: 0; }
+.miot-wordmark { color: var(--teal); font: 700 36px/1 var(--font); letter-spacing: -1px; white-space: nowrap; }
+.miot-wordmark span { color: #4b8b78; }
+.miot-brand-copy { display: flex; flex-direction: column; border-left: 1px solid var(--line-strong); padding-left: 15px; gap: 2px; }
+.miot-brand-copy strong { color: var(--ink); font-size: 16px; font-weight: 600; }
+.miot-brand-copy small { color: var(--muted); font-size: 16px; }
+.public-shell { min-height: 100vh; background: var(--bg); }
+.public-nav { width: 100%; min-height: 82px; height: auto; padding: 16px max(28px, calc((100vw - 1180px)/2)); background: #fff; border-top: 4px solid var(--teal); border-bottom: 1px solid var(--line); gap: 24px; }
+.public-links { margin-left: auto; gap: 28px; }
+.public-links a { color: var(--muted); font-size: 16px; font-weight: 500; }
+.public-footer { width: min(1180px, calc(100% - 56px)); margin: 0 auto; padding: 26px 0; border-top: 1px solid var(--line); gap: 24px; }
+.public-footer p { font-size: 16px; color: var(--muted); margin: 0; }
+.public-footer p strong { color: var(--teal); }
+.footer-links { margin-left: auto; gap: 22px; font-size: 16px; color: var(--muted); }
+.miot-home { width: min(1180px, calc(100% - 56px)); margin: 0 auto; padding: 48px 0 44px; }
+.miot-section-label { color: var(--teal); font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+.miot-intro { padding: 0 0 30px; border-bottom: 1px solid var(--line); }
+.miot-intro h1 { font-size: 34px; line-height: 1.4; font-weight: 600; margin: 0 0 12px; }
+.miot-intro p { color: var(--muted); font-size: 16px; margin-bottom: 18px; }
+.miot-intro-meta { display: flex; flex-wrap: wrap; gap: 12px 28px; font-size: 16px; color: var(--muted); }
+.miot-home-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 28px; padding: 28px 0 36px; }
+.miot-entry, .miot-process { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 28px 30px; }
+.miot-entry { border-top: 3px solid var(--teal); }
+.miot-entry h2, .miot-process h2 { font-size: 21px; font-weight: 600; margin: 0 0 10px; }
+.miot-entry > p { color: var(--muted); font-size: 16px; margin-bottom: 28px; }
+.miot-entry .btn { min-height: 44px; }
+.miot-entry-secondary { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--teal); font-size: 16px; padding: 14px 0 0; }
+.miot-entry-secondary:hover { text-decoration: underline; }
+.miot-entry-help { display: flex; gap: 8px; border-top: 1px solid var(--line); margin-top: 26px; padding-top: 17px; font-size: 16px; color: var(--muted); }
+.miot-entry-help a { color: var(--teal); }
+.miot-process-list { margin: 22px 0 0; padding: 0; list-style: none; }
+.miot-process-list li { display: flex; gap: 18px; padding: 0 0 20px; }
+.miot-process-list li:last-child { padding-bottom: 0; }
+.miot-process-list li > span { font: 500 14px/30px var(--mono); color: var(--teal); border-top: 1px solid #a8beb2; width: 30px; flex: none; }
+.miot-process-list strong { font-weight: 600; font-size: 16px; }
+.miot-process-list p { font-size: 16px; color: var(--muted); margin: 3px 0 0; }
+.miot-section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.miot-section-heading h2 { font-size: 19px; font-weight: 600; margin: 0; }
+.miot-section-heading a { font-size: 16px; color: var(--teal); }
+.miot-module-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); background: #fff; border-radius: 6px; overflow: hidden; }
+.miot-module { padding: 23px; border-right: 1px solid var(--line); transition: background .15s; }
+.miot-module:last-child { border-right: 0; }
+.miot-module:hover { background: #f7faf8; }
+.miot-module > .icon { color: var(--teal); }
+.miot-module h3 { font-size: 16px; font-weight: 600; margin: 16px 0 6px; }
+.miot-module p { font-size: 16px; color: var(--muted); min-height: 40px; margin-bottom: 16px; }
+.miot-module > span { color: var(--teal); font-size: 16px; }
+.sidebar { width: 248px; color: var(--ink); background: #fff; padding: 26px 16px 20px; border-right: 1px solid var(--line); border-top: 4px solid var(--teal); box-shadow: none; }
+.sidebar-top { align-items: flex-start; padding: 0 12px; }
+.sidebar .miot-brand { align-items: flex-start; flex-direction: column; gap: 14px; }
+.sidebar .miot-brand-copy { border: 0; padding: 0; gap: 4px; }
+.sidebar .miot-brand-copy strong { font-size: 16px; }
+.sidebar .miot-brand-copy small { font-size: 16px; }
+.sidebar-context { margin: 30px 12px 8px; }
+.context-label, .side-group-label { color: #000000; font-size: 16px; font-weight: 500; letter-spacing: 0; }
+.side-group-label { margin: 0 12px 5px; }
+.side-nav { gap: 3px; }
+.side-link { color: #000000; min-height: 42px; border-radius: 4px; padding: 10px 12px; font-size: 16px; font-weight: 500; }
+.side-link:hover { background: #f1f5f2; color: var(--teal); }
+.side-link.active { color: var(--teal); background: #e9f2ed; box-shadow: inset 3px 0 var(--teal); }
+.side-link.active .icon { color: var(--teal); }
+.side-divider { background: var(--line); margin: 12px; }
+.sidebar-footer { padding: 20px 12px 0; color: var(--muted); font-size: 16px; letter-spacing: 0; }
+.sidebar-close { color: var(--muted); }
+.app-main { margin-left: 248px; }
+.topbar { min-height: 70px; padding: 12px 30px; background: #fff; backdrop-filter: none; gap: 16px; }
+.topbar-title { font-size: 18px; font-weight: 600; }
+.topbar-kicker, .section-kicker { display: none; }
+.content { width: min(1440px, 100%); padding: 28px 30px 44px; }
+.user-meta strong { font-size: 16px; font-weight: 500; }
+.user-meta small { font-size: 16px; margin-top: 3px; }
+.avatar { background: #edf3ef; color: var(--teal); border: 1px solid #d5e2d9; border-radius: 4px; font-weight: 600; }
+.platform-hero { align-items: center; margin: 0 0 24px; }
+.platform-hero h2 { font-size: 23px; font-weight: 600; margin: 0 0 8px; }
+.platform-hero p { font-size: 16px; }
+.platform-mode-line { display: none; }
+.role-badge { font-size: 16px; font-weight: 500; border: 1px solid var(--line); padding: 1px 7px; }
+.kpi-grid { gap: 16px; margin-bottom: 24px; }
+.kpi-card, .panel, .form-card, .scenario-card, .summary-card { border-radius: 6px; box-shadow: none; }
+.kpi-card { padding: 18px 20px; }
+.kpi-card.highlight { background: #fff; border-color: var(--line); }
+.kpi-head { font-size: 16px; }
+.kpi-icon { background: transparent !important; border-radius: 0; color: var(--muted) !important; }
+.kpi-value { font-size: 29px; font-weight: 600; line-height: 1.45; margin: 6px 0; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.kpi-foot { font-size: 16px; white-space: normal; }
+.dashboard-grid { grid-template-columns: minmax(0, 1.55fr) minmax(260px, .85fr); gap: 20px; }
+.dashboard-side { gap: 20px; }
+.platform-main-grid, .platform-lower-grid { margin-bottom: 20px; }
+.platform-lower-grid { gap: 20px; }
+.panel { min-width: 0; }
+.panel-head { align-items: center; padding: 18px 20px; border-bottom: 1px solid #edf0ee; }
+.panel-head h3 { font-size: 16px; font-weight: 600; margin: 0; }
+.panel-head .text-link { font-weight: 500; font-size: 16px; }
+.experiment-list { padding: 0 16px 8px; }
+.experiment-row { border-bottom: 1px solid #edf0ee; border-radius: 0; padding: 17px 4px; }
+.experiment-row:last-child { border-bottom: 0; }
+.experiment-mark { border-radius: 4px; background: #f2f5f3; }
+.experiment-main strong { font-size: 16px; font-weight: 500; }
+.experiment-main span { font-size: 16px; margin-top: 5px; }
+.experiment-metrics span { font-size: 16px; }
+.status-badge { font-size: 16px; font-weight: 500; padding: 2px 7px; border-radius: 3px; }
+.ledger-mode { color: var(--muted); font-size: 16px; font-weight: 400; letter-spacing: 0; }
+.data-table { font-size: 16px; }
+.data-table thead th { font-size: 16px; font-weight: 500; background: #f8faf9; color: var(--muted); letter-spacing: 0; }
+.data-table td { font-size: 16px; padding: 13px 16px; line-height: 1.6; }
+.data-table th { padding: 12px 16px; }
+.data-table td strong, .table-primary { font-weight: 500; }
+.table-sub { font-size: 16px; margin-top: 4px; }
+.chart-caption, .form-hint, .page-context { font-size: 16px; }
+.page-title { font-size: 23px; font-weight: 600; }
+.page-lede { font-size: 16px; }
+.form-card-head h3 { font-size: 16px; font-weight: 600; }
+.form-card-head p { font-size: 16px; }
+.platform-note { border: 0; border-left: 2px solid var(--line-strong); background: transparent; border-radius: 0; font-size: 16px; padding: 10px 14px; }
+.evidence-row { padding: 12px 0; border-bottom-style: solid; }
+.evidence-row strong { font-size: 16px; font-weight: 500; }
+.evidence-row span:not(.evidence-dot) { font-size: 16px; }
+.evidence-row code { font-size: 16px; color: #000000; }
+.evidence-list { padding: 0 20px 10px; }
+.miot-plan-list { padding: 0 20px; }
+.miot-plan-row { display: block; padding: 15px 0; border-bottom: 1px solid var(--line); }
+.miot-plan-row:last-child { border-bottom: 0; }
+.miot-plan-row > span { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.miot-plan-row strong { font-size: 16px; font-weight: 500; }
+.miot-plan-row small { color: var(--muted); font-size: 16px; display: block; margin-top: 7px; }
+.miot-side-links { display: grid; }
+.miot-side-links a { padding: 13px 20px; border-bottom: 1px solid #edf0ee; display: flex; justify-content: space-between; color: var(--ink-3); font-size: 16px; }
+.miot-side-links a:last-child { border: 0; }
+.miot-side-links a:hover { background: var(--surface-soft); color: var(--teal); }
+.result-title-row h2 { font-size: 23px; font-weight: 600; }
+.result-meta { font-size: 16px; }
+.interpretation { background: #fff; border-color: var(--line); }
+.interpretation p { font-size: 16px; }
+.party-row strong { font-size: 16px; font-weight: 500; }
+.party-row span:not(.party-role):not(.status-badge) { font-size: 16px; }
+.flow-step { font-size: 16px; }
+.trace-mode-banner { border-color: var(--line); background: #f8faf9; border-radius: 4px; }
+.trace-mode-banner h3 { font-size: 16px; font-weight: 500; }
+.trace-mode-banner p { font-size: 16px; color: var(--muted); }
+.alert { border-radius: 4px; font-size: 16px; }
+.alert-info { background: #f0f5f2; border-color: #cdded3; color: #000000; }
+.miot-document { width: min(900px, calc(100% - 56px)); margin: 0 auto; padding: 44px 0 54px; }
+.miot-document > header { padding-bottom: 25px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
+.miot-document h1 { font-size: 30px; font-weight: 600; margin-bottom: 10px; }
+.miot-document > header p { color: var(--muted); font-size: 16px; margin: 0; }
+.miot-document section { margin: 0 0 30px; }
+.miot-document h2 { font-size: 18px; font-weight: 600; margin-bottom: 14px; }
+.miot-document section > p { color: var(--muted); font-size: 16px; line-height: 1.9; }
+.miot-document .table-scroll { background: #fff; border: 1px solid var(--line); border-radius: 4px; margin-bottom: 16px; }
+.miot-definition-list { background: #fff; border: 1px solid var(--line); border-radius: 4px; margin: 0; }
+.miot-definition-list > div { display: grid; grid-template-columns: 130px 1fr; padding: 15px 20px; border-bottom: 1px solid var(--line); gap: 20px; }
+.miot-definition-list > div:last-child { border: 0; }
+.miot-definition-list dt { font-size: 16px; color: var(--ink); }
+.miot-definition-list dd { font-size: 16px; margin: 0; color: var(--muted); }
+.miot-help-steps { padding-left: 22px; }
+.miot-help-steps li { padding: 0 0 12px 6px; }
+.miot-help-steps strong { font-size: 16px; font-weight: 600; }
+.miot-help-steps p { color: var(--muted); font-size: 16px; margin: 5px 0 0; }
+.miot-document-actions { display: flex; gap: 12px; border-top: 1px solid var(--line); padding-top: 24px; }
+.miot-login-page { min-height: 100vh; display: flex; flex-direction: column; }
+.miot-login-header { width: min(1180px, calc(100% - 56px)); margin: 0 auto; padding: 27px 0; display: flex; justify-content: space-between; align-items: center; }
+.miot-login-main { width: min(1000px, calc(100% - 56px)); margin: 42px auto; display: grid; grid-template-columns: 1fr 420px; align-items: start; gap: 90px; flex: 1; }
+.miot-login-intro { padding-top: 56px; }
+.miot-login-intro h1 { font-size: 30px; font-weight: 600; margin-bottom: 18px; }
+.miot-login-intro p { color: var(--muted); line-height: 1.9; max-width: 340px; }
+.miot-login-lines { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 22px; display: grid; gap: 20px; font-size: 16px; color: var(--ink-3); }
+.miot-login-lines span { display: flex; align-items: center; gap: 12px; }
+.miot-login-lines .icon { color: var(--teal); }
+.miot-login-intro > small { display: block; color: var(--muted); font-size: 16px; margin-top: 42px; }
+.miot-login-form { border: 1px solid var(--line); border-top: 3px solid var(--teal); border-radius: 6px; background: #fff; padding: 30px; }
+.miot-login-form h2 { font-size: 23px; font-weight: 600; margin-bottom: 8px; }
+.miot-muted { color: var(--muted); font-size: 16px; margin-bottom: 25px; }
+.miot-account-help { border-top: 1px solid var(--line); margin-top: 22px; padding-top: 17px; }
+.miot-account-help summary { color: var(--teal); font-size: 16px; cursor: pointer; }
+.miot-account-help > p { color: var(--muted); font-size: 16px; margin: 14px 0 8px; }
+.demo-account { border-bottom-style: solid; padding: 12px 0; }
+.demo-identity strong { font-size: 16px; font-weight: 500; }
+.demo-identity span { font-size: 16px; }
+.miot-login-environment { color: var(--muted); font-size: 16px; margin: 22px 0 0; }
+.miot-login-footer { text-align: center; padding: 24px; color: var(--muted); font-size: 16px; }
+.register-page { background: var(--bg); border-top: 4px solid var(--teal); }
+.register-intro h1 { font-size: 30px; line-height: 1.5; font-weight: 600; }
+.register-card { border-radius: 6px; box-shadow: none; }
+.register-intro p { font-size: 16px; }
+.register-sub, .register-invite { font-size: 16px; }
+@media (max-width: 1100px) {
+  .public-links { gap: 18px; }
+  .miot-login-main { gap: 40px; }
+  .platform-lower-grid { grid-template-columns: 1fr; }
+  .dashboard-grid { grid-template-columns: minmax(0, 1.4fr) minmax(230px, 1fr); }
+}
+@media (max-width: 980px) {
+  .sidebar { box-shadow: none; }
+  .app-main { margin-left: 0; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .public-links { display: none; }
+  .public-actions { margin-left: auto; }
+  .miot-module-grid { grid-template-columns: repeat(2, 1fr); }
+  .miot-module:nth-child(2) { border-right: 0; }
+  .miot-module:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  .miot-home-grid { gap: 20px; grid-template-columns: 1fr 1.2fr; }
+  .miot-login-main { grid-template-columns: 1fr 380px; }
+}
+@media (max-width: 720px) {
+  .public-nav { padding: 15px 20px; min-height: 78px; width: 100%; gap: 12px; }
+  .miot-wordmark { font-size: 26px; }
+  .miot-brand { gap: 10px; }
+  .miot-brand-copy { padding-left: 10px; }
+  .miot-brand-copy strong { font-size: 16px; }
+  .miot-brand-copy small { font-size: 16px; }
+  .public-actions .btn { font-size: 16px; padding: 8px 10px; }
+  .miot-home { width: calc(100% - 40px); padding-top: 28px; }
+  .miot-intro h1 { font-size: 27px; }
+  .miot-intro p { font-size: 16px; }
+  .miot-home-grid { grid-template-columns: 1fr; padding-top: 20px; }
+  .miot-entry, .miot-process { padding: 23px; }
+  .miot-module { padding: 20px; }
+  .public-footer { width: calc(100% - 40px); display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+  .public-footer p { order: 0; flex-basis: auto; }
+  .footer-links { margin: 0; gap: 16px; flex-wrap: wrap; }
+  .platform-hero h2 { font-size: 20px; }
+  .content { padding: 20px 16px 36px; }
+  .topbar { padding: 10px 16px; min-height: 64px; }
+  .topbar-title { font-size: 17px; }
+  .kpi-grid { gap: 10px; }
+  .kpi-card { padding: 14px; }
+  .kpi-value { font-size: 25px; }
+  .kpi-foot { min-height: 34px; }
+  .kpi-icon { display: none; }
+  .platform-main-grid { gap: 14px; }
+  .panel-head { gap: 10px; padding: 16px; }
+  .experiment-metrics > span:last-child { display: none; }
+  .evidence-row { flex-wrap: wrap; gap: 7px; }
+  .evidence-row code { padding-left: 14px; width: 100%; overflow-wrap: anywhere; }
+  .miot-document { width: calc(100% - 40px); padding-top: 30px; }
+  .miot-definition-list > div { grid-template-columns: 90px 1fr; padding: 14px; gap: 12px; }
+  .miot-login-header { width: calc(100% - 40px); padding: 23px 0; gap: 15px; }
+  .miot-login-header > .text-link { font-size: 16px; white-space: nowrap; }
+  .miot-login-main { width: calc(100% - 40px); margin: 10px auto 24px; grid-template-columns: 1fr; gap: 24px; }
+  .miot-login-intro { padding-top: 8px; }
+  .miot-login-intro h1 { font-size: 25px; }
+  .miot-login-intro p { margin-bottom: 0; max-width: none; }
+  .miot-login-lines, .miot-login-intro > small { display: none; }
+  .miot-login-form { padding: 25px; }
+  .field-span-4 { grid-column: span 1; }
+  .trace-actions { flex-wrap: wrap; }
+}
+@media (max-width: 390px) {
+  .public-actions .icon { display: none; }
+  .public-nav { padding-left: 16px; padding-right: 16px; }
+  .miot-brand-copy small { font-size: 16px; }
+  .miot-module { padding: 16px; }
+}
+
+/* Iterative coordination uses the same restrained factory-workspace palette. */
+.coordination-grid { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(260px,.75fr); gap: 22px; margin-bottom: 24px; align-items: start; }
+.coordination-grid .form-card { margin: 0; }
+.coordination-form { display: grid; gap: 20px; }
+.coordination-form .field-grid { margin: 0; }
+.trial-cases { border: 0; padding: 0; margin: 0; min-width: 0; }
+.trial-cases legend { margin-bottom: 12px; font-size: 16px; color: var(--muted); }
+.trial-case { display: flex; align-items: start; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); cursor: pointer; }
+.trial-case input { margin-top: 5px; accent-color: var(--teal); }
+.trial-case strong { font-size: 16px; font-weight: 500; }
+.trial-case small { display: block; color: var(--muted); margin-top: 5px; font-size: 16px; line-height: 1.7; }
+.coordination-explainer { padding: 24px; }
+.coordination-explainer h3 { font-size: 17px; font-weight: 600; margin-bottom: 18px; }
+.coordination-explainer p { font-size: 16px; color: var(--muted); }
+.coordination-steps { padding-left: 24px; margin: 18px 0 24px; }
+.coordination-steps li { padding-left: 8px; margin: 0 0 20px; }
+.coordination-steps li::marker { color: var(--teal); }
+.coordination-steps strong { font-weight: 500; font-size: 16px; }
+.coordination-steps p { font-size: 16px; margin: 5px 0 0; }
+.strategy-select { min-height: 32px; font-size: 16px; padding: 4px 7px; width: 135px; margin-bottom: 8px; }
+.demand-table .inline-form { display: flex; flex-direction: column; align-items: start; }
+.kpi-value.compact-number { font-size: 24px; }
+.residual-panel, .run-technical { margin-bottom: 24px; }
+.residual-panel svg { width: 100%; height: auto; max-height: 280px; display: block; padding: 12px 16px 0; }
+.residual-panel svg text { font-family: var(--font); font-size: 16px; fill: var(--muted); }
+.plot-axis { stroke: var(--line-strong); stroke-width: 1; }
+.plot-threshold { stroke: #a27c43; stroke-dasharray: 5 4; stroke-width: 1; }
+.plot-residual { fill: none; stroke: var(--teal); stroke-width: 2; stroke-linejoin: round; }
+.residual-panel > p { padding: 0 24px 18px; margin: 0; }
+.run-plan-links { display: flex; flex-wrap: wrap; gap: 10px; padding: 18px 24px 0; }
+.run-plan-links + p { padding: 12px 24px 20px; }
+.run-technical { padding: 18px 24px; margin-top: 24px; }
+.run-technical summary { color: var(--teal); cursor: pointer; }
+.run-technical p { color: var(--muted); font-size: 16px; margin-top: 16px; }
+.run-technical code { font-size: 16px; overflow-wrap: anywhere; }
+.status-success, .status-checked { background: #e6f1e9; color: #000000; }
+.status-settlement-infeasible, .status-quantization-infeasible, .status-solver-failed { background: #f7eae7; color: #000000; }
+.status-not-converged, .status-input-unsupported { background: #f5efdf; color: #000000; }
+.status-superseded { background: #eef1ef; color: #000000; }
+@media (max-width:1100px) { .coordination-grid { grid-template-columns: minmax(0,1fr); } }
+@media (max-width:720px) { .kpi-value.compact-number { font-size: 20px; } .coordination-explainer { padding: 20px; } }
+
+/* Typography contract: Chinese YaHei, Latin Times New Roman; ordinary text black. */
+body { color: #000000; line-height: 1.75; }
+.mono, code, pre { font-family: var(--font); font-size: 1em; }
+.input { font-size: 16px; }
+.input::placeholder { color: #000000; opacity: 1; }
+.btn { font-size: 16px; font-weight: 500; letter-spacing: 0; }
+.btn-sm, .btn-xs { font-size: 16px; }
+.text-link, .link-back, .miot-entry-secondary, .miot-section-label,
+.miot-section-heading a, .footer-links a, .public-footer p strong,
+.miot-entry-help a, .side-link, .side-link.active, .ledger-mode,
+.role-badge, .status-badge, .badge, .form-hint, .field-hint,
+.table-sub, .chart-caption, .page-context, .context-label,
+.side-group-label, .password-toggle, .register-points,
+.register-sub, .register-invite, .register-link-row,
+.miot-account-help summary, .run-technical summary { color: #000000; }
+.miot-brand-copy small, .sidebar .miot-brand-copy small { color: #000000; font-size: 16px; }
+.miot-wordmark { letter-spacing: -.5px; }
+.miot-section-label { font-weight: 400; }
+.public-links a, .side-link, .miot-side-links a { font-size: 16px; }
+.data-table, .data-table td, .data-table th { font-size: 16px; }
+.data-table td { padding-top: 14px; padding-bottom: 14px; }
+.miot-document section > p, .miot-help-steps p { font-size: 16px; }
+.page-lede, .platform-hero p, .interpretation p, .coordination-explainer p { font-size: 16px; }
+.alert, .flash { font-size: 16px; color: #000000; }
+.residual-panel { overflow-x: auto; }
+.residual-panel svg { min-width: 640px; }
+.residual-panel svg text { fill: #000000; font-size: 18px; }
+.strategy-select { width: 155px; }
+
+/* A static regional drawing: no activity animation or implied live links. */
+.gba-network { margin: 0; min-width: 0; position: relative; }
+.gba-network svg { width: 100%; height: auto; display: block; overflow: visible; }
+.gba-water { fill: #175d58; fill-opacity: .055; }
+.gba-links { fill: none; stroke: #175d58; stroke-width: 1.6; stroke-opacity: .26; }
+.gba-nodes { fill: #175d58; fill-opacity: .50; }
+.gba-city-names { fill: #000000; font-family: var(--font); font-size: 24px; font-weight: 400; }
+.gba-network figcaption { font-size: 16px; color: #000000; text-align: right; margin-top: 6px; }
+.miot-home { padding-top: 28px; }
+.gba-overview { display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); align-items: center; gap: 60px; padding: 28px 0 32px; }
+.gba-region { margin: 0 0 20px; font-size: 18px; color: #000000; letter-spacing: 1px; }
+.gba-overview h1 { font-size: 36px; font-weight: 600; line-height: 1.5; margin-bottom: 24px; }
+.gba-overview-description { font-size: 16px; line-height: 1.9; margin-bottom: 28px; max-width: 430px; }
+.gba-team, .gba-environment { font-size: 16px; color: #000000; }
+.gba-team { margin: 0 0 8px; }
+.gba-work-entry { display: flex; align-items: center; justify-content: space-between; gap: 28px; background: #fff; border: 1px solid var(--line-strong); border-left: 3px solid var(--teal); padding: 25px 28px; }
+.gba-work-entry h2 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+.gba-work-entry p { color: #000000; font-size: 16px; margin: 0; }
+.gba-entry-actions { display: flex; align-items: center; gap: 24px; flex: none; }
+.gba-business { padding: 32px 0 8px; }
+.gba-business .miot-section-heading { margin-bottom: 12px; }
+.gba-business .miot-section-heading h2 { font-size: 22px; }
+.gba-business-list { border-top: 1px solid var(--line-strong); }
+.gba-business-list > a { display: grid; grid-template-columns: 200px 1fr 115px; align-items: center; gap: 24px; padding: 22px 4px; border-bottom: 1px solid var(--line); }
+.gba-business-list > a:hover { background: #edf2ef; }
+.gba-business-list > a > span { display: flex; align-items: center; gap: 14px; }
+.gba-business-list strong { font-size: 17px; font-weight: 500; }
+.gba-business-list p { margin: 0; font-size: 16px; color: #000000; }
+.gba-business-action { font-size: 16px; color: #000000; justify-content: end; }
+.gba-business-list .icon { color: var(--teal); }
+.miot-login-page { background: #f6f8f6; border-top: 4px solid var(--teal); }
+.miot-login-main { width: min(1180px,calc(100% - 56px)); margin: 32px auto 40px; grid-template-columns: minmax(0,1fr) 410px; gap: 16px 80px; }
+.miot-login-intro { padding-top: 28px; min-width: 0; grid-column: 1; grid-row: 1; }
+.miot-login-intro .gba-region { font-size: 18px; margin-bottom: 16px; }
+.miot-login-intro h1 { font-size: 34px; line-height: 1.5; margin-bottom: 18px; }
+.miot-login-intro .gba-login-description { font-size: 16px; max-width: 100%; margin-bottom: 10px; color: #000000; }
+.gba-login-network { grid-column: 1; grid-row: 2; min-width: 0; }
+.gba-login-network .gba-network figcaption { text-align: left; }
+.miot-login-form { border-top: 2px solid var(--teal); border-radius: 2px; padding: 32px; grid-column: 2; grid-row: 1 / span 2; }
+.miot-login-form h2 { font-size: 24px; font-weight: 600; }
+.miot-muted, .miot-login-environment, .miot-login-footer { color: #000000; font-size: 16px; }
+.register-intro .eyebrow { color: #000000; background: none; border: 0; padding: 0; font-size: 18px; font-weight: 400; letter-spacing: 0; }
+.register-intro .eyebrow-dot { display: none; }
+.register-points { font-size: 16px; }
+.register-points span { border: 0; background: transparent; padding-left: 0; }
+.register-footer { color: #000000; font-size: 16px; }
+
+@media (max-width:1100px) {
+  .gba-overview { gap: 30px; }
+  .miot-login-main { gap: 16px 35px; grid-template-columns: minmax(0,1fr) 380px; }
+  .gba-overview h1, .miot-login-intro h1 { font-size: 30px; }
+}
+@media (max-width:720px) {
+  .public-nav { flex-wrap: wrap; }
+  .public-actions .icon { display: none; }
+  .miot-wordmark { font-size: 32px; }
+  .miot-brand-copy strong { font-size: 16px; }
+  .miot-brand-copy small { font-size: 16px; max-width: 184px; white-space: normal; }
+  .public-actions .btn, .miot-login-header > .text-link { font-size: 16px; }
+  .miot-home { padding-top: 18px; }
+  .gba-overview { grid-template-columns: minmax(0,1fr); gap: 16px; padding-top: 12px; }
+  .gba-overview h1, .miot-login-intro h1 { font-size: 28px; }
+  .gba-region { font-size: 17px; margin-bottom: 12px; }
+  .gba-overview-description { margin-bottom: 20px; }
+  .gba-network { max-width: 100%; }
+  .gba-city-names { font-size: 30px; }
+  .gba-work-entry { flex-direction: column; align-items: start; padding: 22px; }
+  .gba-entry-actions { gap: 24px; }
+  .gba-business-list > a { grid-template-columns: minmax(0,1fr) 95px; gap: 8px 10px; }
+  .gba-business-list p { grid-row: 2; grid-column: 1 / -1; }
+  .gba-business-action { grid-row: 1; grid-column: 2; }
+  .miot-login-header { flex-wrap: wrap; align-items: start; }
+  .miot-login-main { grid-template-columns: minmax(0,1fr); gap: 26px; margin-top: 8px; width: calc(100% - 40px); }
+  .miot-login-intro { padding-top: 4px; }
+  .miot-login-form { padding: 25px; grid-column: 1; grid-row: 2; }
+  .gba-login-network { grid-column: 1; grid-row: 3; }
+  .user-meta small { display: none; }
+}
+
+/* Regional service portal, matching the existing black type and green palette. */
+.miot-brand:not(.miot-brand-compact) .miot-brand-copy strong { font-size: 22px; line-height: 1.5; }
+.public-nav { min-height: 110px; }
+.public-actions { margin-left: auto; }
+.portal-nav { background: #e8f0eb; border-top: 1px solid #d6e1d9; border-bottom: 1px solid #c5d5ca; }
+.portal-nav > div { width: min(1180px,calc(100% - 56px)); display: flex; gap: 10px; margin: 0 auto; overflow-x: auto; }
+.portal-nav a { color: #000000; padding: 14px 25px 11px; font-size: 16px; border-bottom: 3px solid transparent; white-space: nowrap; }
+.portal-nav a:hover, .portal-nav a.active { background: #f5f8f6; border-bottom-color: var(--teal); }
+.portal-home { padding: 26px 0 36px; }
+.portal-heading { display: flex; gap: 20px; align-items: start; justify-content: space-between; margin-bottom: 24px; }
+.portal-heading h1 { font-size: 26px; font-weight: 600; margin: 0 0 8px; }
+.portal-heading p { font-size: 16px; margin: 0; max-width: 820px; }
+.portal-heading > span { font-size: 16px; white-space: nowrap; padding-top: 8px; }
+.portal-overview { display: grid; grid-template-columns: 218px minmax(0,1fr) 260px; gap: 20px; align-items: start; }
+.portal-region { grid-column: 2; grid-row: 1; border: 1px solid var(--line); background: #f8faf8; padding: 20px 12px; }
+.portal-region-head { padding: 0 10px 6px; }
+.portal-region h2 { font-size: 21px; font-weight: 500; margin: 0 0 6px; }
+.portal-region-head > span { font-size: 16px; }
+.portal-region .gba-city-names { font-size: 27px; }
+.portal-region .gba-network { margin-top: 18px; }
+.portal-region .gba-network figcaption { padding-right: 10px; }
+.portal-services { grid-column: 1; grid-row: 1; border: 1px solid var(--line); background: #fff; }
+.portal-services h2, .portal-access h2 { font-size: 18px; font-weight: 500; margin: 0; }
+.portal-services h2 { background: #e8f0eb; color: #000000; padding: 16px; border-top: 2px solid var(--teal); }
+.portal-services > a { display: flex; align-items: center; gap: 10px; padding: 17px 14px; border-bottom: 1px solid var(--line); }
+.portal-services > a:last-child { border: 0; }
+.portal-services > a:hover { background: #edf4ef; }
+.portal-services > a > .icon { color: var(--teal); }
+.portal-services > a > .icon:last-child { margin-left: auto; }
+.portal-services > a > span { font-size: 16px; }
+.portal-services small { font-size: 16px; display: block; margin-top: 7px; color: #000000; }
+.portal-access { grid-column: 3; grid-row: 1; display: grid; gap: 16px; }
+.portal-access > section { background: #fff; padding: 20px; border: 1px solid var(--line); border-top: 2px solid var(--teal); }
+.portal-access p { margin: 12px 0 18px; font-size: 16px; }
+.portal-secondary { display: block; text-align: center; padding-top: 12px; font-size: 16px; }
+.portal-method-link { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 16px; padding: 12px 0; border-top: 1px solid var(--line); }
+.portal-method-link:last-child { padding-bottom: 0; }
+.portal-help { display: flex; justify-content: space-between; padding: 0 3px; font-size: 16px; }
+.portal-business-flow { margin-top: 26px; border: 1px solid var(--line); background: #fff; padding: 18px 24px; }
+.portal-business-flow h2 { font-size: 18px; font-weight: 500; margin: 0 0 16px; }
+.portal-business-flow > div { display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
+.portal-business-flow a { font-size: 16px; }
+.portal-business-flow > div > span { color: var(--teal); }
+
+.algorithm-main-grid { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr); gap: 22px; margin-bottom: 24px; align-items: start; }
+.algorithm-main-grid .form-card { margin-bottom: 0; }
+.algorithm-methods { border: 0; padding: 0; margin: 0; min-width: 0; }
+.algorithm-methods legend { font-size: 16px; margin-bottom: 12px; }
+.algorithm-methods label { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.algorithm-methods input { accent-color: var(--teal); }
+.algorithm-parameters summary { cursor: pointer; font-size: 16px; }
+.algorithm-parameters .field-grid { margin-top: 18px; }
+.algorithm-parameters > p { margin-top: 16px; }
+.algorithm-library { padding: 24px; }
+.algorithm-library > h3 { font-size: 18px; font-weight: 500; margin-bottom: 16px; }
+.algorithm-library > div { padding: 16px 0; border-top: 1px solid var(--line); }
+.algorithm-library h4 { font-size: 16px; font-weight: 500; margin: 0 0 8px; }
+.algorithm-library p { font-size: 16px; margin: 0 0 12px; }
+.legacy-method, .model-context { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 20px 24px; margin-bottom: 24px; border: 1px solid var(--line-strong); background: #f5f8f6; }
+.legacy-method h3 { font-size: 18px; font-weight: 500; margin-bottom: 8px; }
+.legacy-method p, .model-context p { font-size: 16px; margin: 6px 0 0; }
+.model-context strong { font-size: 16px; font-weight: 500; }
+.legacy-method .btn, .model-context .btn { flex: none; }
+.comparison-context { display: flex; gap: 14px 30px; flex-wrap: wrap; margin: 0 0 24px; font-size: 16px; }
+.comparison-note { padding: 18px 24px; margin: 0; border-top: 1px solid var(--line); font-size: 16px; }
+.comparison-table { min-width: 850px; }
+.welfare-panel { margin: 24px 0; }
+.welfare-plot { width: 100%; min-width: 780px; display: block; }
+.welfare-plot text { fill: #000000; font-family: var(--font); font-size: 16px; }
+.welfare-paper { fill: #175d58; }.welfare-fixed { fill: #94afa0; }.welfare-planner { fill: #557b66; }
+.status-benchmark-ready { background: #e6f1e9; color: #000000; }
+.status-allocation-failed { background: #f7eae7; color: #000000; }
+@media (max-width:1100px) {
+  .portal-overview { grid-template-columns: 200px minmax(0,1fr); }
+  .portal-access { grid-column: 1 / -1; grid-row: 2; grid-template-columns: 1fr 1fr; }
+  .portal-help { grid-column: 1 / -1; }
+  .algorithm-main-grid { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width:720px) {
+  .miot-brand:not(.miot-brand-compact) .miot-brand-copy strong { font-size: 16px; max-width: 216px; }
+  .public-nav { min-height: 110px; }
+  .portal-nav > div { width: calc(100% - 40px); gap: 0; }
+  .portal-nav a { padding-left: 16px; padding-right: 16px; font-size: 16px; }
+  .portal-heading { flex-direction: column; gap: 8px; }
+  .portal-heading h1 { font-size: 24px; }
+  .portal-heading > span { padding: 0; }
+  .portal-overview { grid-template-columns: minmax(0,1fr); gap: 18px; }
+  .portal-region { grid-column: 1; grid-row: 1; padding: 18px 8px; }
+  .portal-region .gba-city-names { font-size: 34px; }
+  .portal-services { grid-column: 1; grid-row: 2; }
+  .portal-access { grid-column: 1; grid-row: 3; grid-template-columns: minmax(0,1fr); }
+  .portal-business-flow { padding: 20px; }
+  .portal-business-flow > div { justify-content: start; }
+  .legacy-method, .model-context { flex-direction: column; align-items: start; padding: 20px; gap: 16px; }
+}
+
+/* Development sign-in and an original, lightweight raised regional drawing. */
+.miot-login-main { grid-template-columns: minmax(0,1fr) 460px; column-gap: 40px; align-items: start; margin-top: 20px; }
+.miot-login-context { min-width: 0; }
+.miot-login-intro { padding-top: 22px; }
+.miot-login-intro h1 { margin-bottom: 12px; }
+.gba-login-network { margin-top: 26px; }
+.miot-login-form { grid-column: auto; grid-row: auto; padding: 26px; }
+.miot-login-form .miot-muted { margin-bottom: 20px; }
+.miot-login-form .stack-form { gap: 14px; }
+.miot-login-form .input { min-height: 44px; }
+.miot-login-form .miot-login-environment { margin-top: 16px; }
+.login-demo-accounts { border-top: 1px solid var(--line-strong); margin-top: 22px; padding-top: 17px; }
+.login-demo-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.login-demo-heading h3 { font-size: 16px; margin: 0; font-weight: 600; }
+.login-demo-heading span { font-size: 16px; color: #000; }
+.login-demo-scroll { overflow-x: auto; }
+.login-demo-table { width: 100%; border-collapse: collapse; color: #000; font-size: 16px; }
+.login-demo-table th { font-weight: 400; text-align: left; padding: 6px 4px 9px; border-bottom: 1px solid var(--line); }
+.login-demo-table td { padding: 10px 4px; border-bottom: 1px solid #e7ece8; white-space: nowrap; line-height: 1.5; }
+.login-demo-table tr:last-child td { border-bottom: 0; }
+.login-demo-table td:first-child { padding-left: 0; }
+.login-demo-table td:last-child { padding-right: 0; text-align: right; }
+.login-demo-button { border: 1px solid #9bb7a8; background: #edf4ef; border-radius: 3px; color: #000; cursor: pointer; font: inherit; font-size: 16px; line-height: 1.5; padding: 4px 10px; }
+.login-demo-button:hover { border-color: #1f5e50; background: #dcece1; }
+.login-demo-button:focus-visible { outline: 2px solid #1f5e50; outline-offset: 2px; }
+.gba-isometric svg { overflow: visible; }
+.gba-city-link { fill: none; stroke: #3e7b65; stroke-width: 1.6; stroke-opacity: .65; }
+.gba-link-main { stroke: #195a47; stroke-width: 2.2; stroke-opacity: .85; }
+.gba-label-plate { fill: #ffffff; stroke: #adc8b6; stroke-width: .9; }
+.gba-city-labels text { fill: #000000; font-family: var(--font); font-size: 22px; font-weight: 400; }
+.gba-label-leader { fill: none; stroke: #3e6d59; stroke-width: 1; }
+.gba-isometric figcaption { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; text-align: left; font-size: 16px; color: #000; }
+.gba-isometric figcaption > span:last-child { margin-left: auto; }
+.gba-legend-line { display: inline-block; height: 1px; width: 26px; background: #3e7b65; }
+@media (max-width:1100px) and (min-width:721px) { .miot-login-main { grid-template-columns: minmax(0,1fr) 420px; column-gap: 20px; } .miot-login-form { padding: 22px; } .gba-city-labels text { font-size: 25px; } }
+@media (max-width:720px) {
+  .miot-login-main { display: flex; flex-direction: column; gap: 24px; margin-top: 8px; }
+  .miot-login-context { display: contents; }
+  .miot-login-intro { order: 1; padding-top: 0; }
+  .miot-login-form { order: 2; width: 100%; padding: 20px; }
+  .gba-login-network { order: 3; width: 100%; margin-top: 4px; }
+  .login-demo-heading { align-items: start; flex-direction: column; gap: 2px; }
+  .login-demo-table th, .login-demo-table td { padding-left: 3px; padding-right: 3px; }
+  .login-demo-button { padding-left: 7px; padding-right: 7px; }
+  .gba-city-labels text { font-size: 29px; }
+  .gba-isometric figcaption > span:last-child { margin-left: 0; width: 100%; }
+}
+
+/* Readability baseline requested by the project owner: 18px body,
+   16px for descriptions, controls and tabular metadata. */
+body { font-size: 18px; line-height: 1.7; }
+p, li { font-size: 18px; }
+.miot-muted, .page-lede, .form-hint, .table-sub, .chart-caption,
+.comparison-note, .comparison-context, .kpi-foot, .kpi-head,
+.side-link, .user-meta strong, .user-meta small, .context-label,
+.section-kicker, .miot-brand-copy small, .miot-login-environment,
+.miot-login-footer, .login-demo-heading, .login-demo-table,
+.algorithm-methods legend, .algorithm-parameters summary,
+.algorithm-library p, .algorithm-library h4, .method-option small,
+.miot-intro p, .miot-entry > p, .miot-process-list p,
+.miot-module p, .platform-hero p, .panel-head .text-link,
+.experiment-main strong, .experiment-main span, .experiment-metrics span,
+.evidence-row strong, .evidence-row span, .evidence-row code,
+.detail-empty, .run-technical p, .result-meta, .role-badge, .status-badge,
+.ledger-mode, .page-context { font-size: 16px; }
+.input, .select, .btn, .field-label, .password-toggle,
+.algorithm-methods label, .comparison-table { font-size: 16px; }
+.input, .select { min-height: 46px; }
+.data-table, .data-table thead th, .data-table td { font-size: 16px; }
+.btn-sm { font-size: 16px; }
+.method-group { border-top: 1px solid var(--line); padding: 12px 0 4px; }
+.method-group:first-of-type { border-top: 0; padding-top: 0; }
+.method-group-title { color: var(--muted); font-size: 16px; font-weight: 600; margin: 2px 0 4px; }
+.method-option { align-items: flex-start !important; }
+.method-option span { display: grid; gap: 2px; }
+.method-option small { color: var(--muted); font-weight: 400; line-height: 1.45; }
+.welfare-one-sided { fill: #7f9f8d; }
+.welfare-paper_no_iteration { fill: #b0895e; }
+.welfare-paper_no_filter { fill: #b9a36e; }
+.welfare-paper_no_state { fill: #8c8f78; }
+@media (max-width: 720px) {
+  .method-option small { font-size: 16px; }
+}
+.topbar-kicker, .avatar { font-size: 16px; }
+.error-page p, .error-message { font-size: 16px; }
+
+@media (min-width: 1100px) { .platform-kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.capability-filter { display: flex; align-items: end; gap: 14px; padding: 14px 20px 0; }
+.capability-filter .field { min-width: 320px; margin: 0; }
+.capability-filter .text-link { padding-bottom: 13px; }
+@media (max-width: 700px) { .capability-filter { display: block; } .capability-filter .field { min-width: 0; } }
+.chart3d-panel { margin: 24px 0; }
+.welfare-3d { min-width: 900px; overflow: visible; }
+.welfare-3d .plot-grid { stroke: #cbd5e1; stroke-width: 1; stroke-dasharray: 3 5; }
+.chart-tick { fill: #334155; font-size: 16px; }
+.chart3d-label { fill: #0f172a; font-size: 16px; }
+.chart3d-value { fill: #0f172a; font-size: 16px; font-weight: 600; }
+.welfare-3d-front { fill-opacity: .95; }
+.welfare-3d-top { fill-opacity: .70; }
+.welfare-3d-side { fill-opacity: .55; }
+.chart3d-panel { margin: 24px 0; }
+.welfare-3d { min-width: 900px; overflow: visible; }
+.welfare-3d .plot-grid { stroke: #cbd5e1; stroke-width: 1; stroke-dasharray: 3 5; }
+.chart-tick { fill: #334155; font-size: 16px; }
+.chart3d-label { fill: #0f172a; font-size: 16px; }
+.chart3d-value { fill: #0f172a; font-size: 16px; font-weight: 600; }
+.welfare-3d-front { fill-opacity: .95; }
+.welfare-3d-top { fill-opacity: .70; }
+.welfare-3d-side { fill-opacity: .55; }
+.welfare-scatter-3d { min-width: 900px; }
+.scatter3d-point .welfare-paper { fill: #175d58; }
+.scatter3d-point .welfare-fixed { fill: #94afa0; }
+.scatter3d-point .welfare-one-sided { fill: #7f9f8d; }
+.scatter3d-point .welfare-planner { fill: #557b66; }
+.scatter3d-point .welfare-paper_no_iteration { fill: #b0895e; }
+.scatter3d-point .welfare-paper_no_filter { fill: #b9a36e; }
+.scatter3d-point .welfare-paper_no_state { fill: #8c8f78; }
+.scatter3d-stem { stroke: #94a3b8; stroke-width: 1; stroke-dasharray: 2 3; }
+
+.scatter3d-index { fill: #ffffff; font-size: 16px; font-weight: 700; pointer-events: none; }
+.scatter-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 22px; padding: 8px 22px 18px; }
+.scatter-legend > div { display: flex; align-items: center; gap: 7px; font-size: 16px; min-width: 0; }
+.scatter-legend strong { font-weight: 500; }
+.scatter-legend small { color: #000; white-space: nowrap; }
+.legend-index { display: inline-flex; width: 20px; height: 20px; align-items: center; justify-content: center; border-radius: 50%; background: #e2e8f0; font-size: 16px; }
+.legend-dot { width: 13px; height: 13px; border-radius: 50%; display: inline-block; flex: none; }
+@media (max-width: 760px) { .scatter-legend { grid-template-columns: 1fr; } }
+
+/* Soft regional ribbons fill the unused login canvas without implying data. */
+.miot-login-page {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 520px at 4% 18%, rgba(198, 229, 211, .55), transparent 68%),
+    radial-gradient(820px 540px at 98% 6%, rgba(222, 242, 230, .72), transparent 66%),
+    linear-gradient(155deg, #f7faf7 0%, #f1f7f2 48%, #f8fbf8 100%);
+}
+.miot-login-page::before,
+.miot-login-page::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(1px);
+}
+.miot-login-page::before {
+  width: 62vw;
+  height: 17vw;
+  left: -19vw;
+  top: 35%;
+  min-height: 150px;
+  background: linear-gradient(100deg, rgba(111, 169, 137, .03), rgba(157, 205, 175, .30), rgba(221, 241, 227, .08));
+  transform: rotate(-15deg);
+}
+.miot-login-page::after {
+  width: 54vw;
+  height: 15vw;
+  right: -18vw;
+  bottom: 7%;
+  min-height: 130px;
+  background: linear-gradient(100deg, rgba(222, 242, 230, .05), rgba(161, 208, 178, .25), rgba(111, 169, 137, .03));
+  transform: rotate(12deg);
+}
+.miot-login-header, .miot-login-main, .miot-login-footer { position: relative; z-index: 1; }
+.gba-login-network { position: relative; z-index: 1; }
+@media (max-width: 720px) {
+  .miot-login-page::before { width: 110vw; height: 26vw; left: -40vw; top: 41%; }
+  .miot-login-page::after { width: 95vw; height: 22vw; right: -38vw; bottom: 4%; }
+}
+
+/* Animated regional light flow: decorative movement along existing city links. */
+.gba-traffic .gba-flow-route { fill: none; stroke: none; }
+.gba-flow-dot { stroke: #ffffff; stroke-width: 1.1; opacity: .95; filter: drop-shadow(0 0 4px rgba(23,93,88,.35)); }
+.gba-flow-teal { fill: #1f6f5b; }
+.gba-flow-amber { fill: #d99a45; }
+@keyframes gbaPulse { 0%, 100% { opacity: .18; transform: scale(.85); } 50% { opacity: .55; transform: scale(1.15); } }
+@media (prefers-reduced-motion: reduce) {
+  .gba-flow-dot { display: none; }
+}
+
+/* MIoT wordmark ribbon: an original abstract green sweep, not a copied logo. */
+.miot-ribbon { display: none; }
+.miot-brand { position: relative; isolation: isolate; }
+.miot-login-header .miot-ribbon {
+  display: block;
+  position: absolute;
+  left: -20px;
+  top: -18px;
+  width: 190px;
+  height: 78px;
+  z-index: -1;
+  pointer-events: none;
+  transform: rotate(-8deg);
+}
+.miot-login-header .miot-ribbon svg { width: 100%; height: 100%; overflow: visible; }
+@media (max-width: 720px) {
+  .miot-login-header .miot-ribbon { width: 142px; height: 62px; left: -14px; top: -14px; }
+}
+.login-demo-table td:first-child { white-space: normal; width: 48%; line-height: 1.45; }
+.login-demo-table th:first-child { width: 48%; }
+
+.language-switch { display: inline-flex; align-items: center; min-height: 34px; padding: 4px 11px; border: 1px solid #9bb7a8; border-radius: 3px; color: #175d58; font-size: 16px; font-weight: 500; text-decoration: none; }
+.language-switch:hover { background: #edf4ef; }
+.login-form-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.login-form-heading h2 { margin-bottom: 8px; }
+.login-lang-inline { color: #175d58; font-size: 16px; letter-spacing: .04em; }
+
+.sidebar .miot-brand { width: 100%; align-items: stretch; }
+.sidebar .miot-brand-copy { min-width: 0; max-width: 100%; width: 100%; }
+.sidebar .miot-brand-copy strong, .sidebar .miot-brand-copy small { display: block; max-width: 100%; }
+.sidebar .miot-brand-copy strong, .sidebar .miot-brand-copy small { white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
+.cda-image-wrap { padding: 18px 22px 0; }
+.cda-image-wrap img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+.cda-chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin: 22px 0; }
+.cda-chart-grid .panel { min-width: 0; }
+.cda-explanation { margin-top: 22px; }
+.cda-explanation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; padding: 20px 24px 24px; }
+.cda-explanation-grid strong { display: block; margin-bottom: 6px; }
+.cda-explanation-grid p { color: #000; }
+@media (max-width: 820px) { .cda-chart-grid, .cda-explanation-grid { grid-template-columns: 1fr; } }
+.cda-validation-card { display: flex; align-items: center; gap: 20px; margin: 20px 0 24px; padding: 20px 24px; border-left: 4px solid var(--teal); }
+.cda-validation-mark { width: 44px; height: 44px; display: grid; place-items: center; flex: none; background: #edf4ef; color: var(--teal); border-radius: 4px; }
+.cda-validation-copy { min-width: 0; flex: 1; }
+.cda-validation-copy h3 { margin: 4px 0 6px; font-size: 19px; }
+.cda-validation-copy p { margin: 0 0 8px; font-size: 16px; color: #000; }
+.cda-validation-facts { display: flex; flex-wrap: wrap; gap: 8px 16px; color: #175d58; font-size: 16px; }
+.cda-validation-facts span { border-left: 2px solid #b7d2c2; padding-left: 8px; }
+.panel.cda-current-context { margin: 20px 0; padding: 20px 24px; }
+.cda-current-context h3 { margin: 4px 0 8px; }
+.cda-current-context p { margin: 4px 0; font-size: 16px; }
+@media (max-width: 720px) { .cda-validation-card { align-items: flex-start; flex-wrap: wrap; } .cda-validation-mark { display: none; } }

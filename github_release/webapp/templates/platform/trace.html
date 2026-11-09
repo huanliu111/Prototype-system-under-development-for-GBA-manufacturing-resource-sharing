@@ -1,0 +1,75 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import ledger_mode, event_label %}
+{% block title %}结算与追溯{% endblock %}
+{% block topbar_kicker %}SETTLEMENT / EVIDENCE{% endblock %}
+{% block page_title %}结算与追溯{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <span class="section-kicker">AUDIT TRAIL</span>
+    <h2 class="page-title">结算与操作记录</h2>
+    <p class="page-lede">查看业务操作、执行组织、记录时间及摘要校验结果。</p>
+  </div>
+  <div class="trace-actions">
+    {% if can('trace.export') %}<a class="btn btn-ghost" href="{{ url_for('platform.export_trace') }}">{{ icon('download', 16) }} 导出 JSON</a>{% endif %}
+    {% if can('trace.verify') %}<form method="post" action="{{ url_for('platform.verify_trace') }}">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+      <button class="btn btn-ghost" type="submit">{{ icon('shield', 16) }} 校验哈希链</button>
+    </form>{% endif %}
+  </div>
+</div>
+
+<div class="alert {{ 'alert-info' if valid else 'alert-error' }}">
+  {{ icon('check' if valid else 'alert', 18) }}
+  <span>
+    {% if valid %}
+      系统原始记录的摘要链校验通过，当前显示 {{ events|length }} 条授权可见记录。
+    {% else %}
+      记录校验失败，首个异常事件 ID：{{ bad_id }}。请联系管理员核查。
+    {% endif %}
+  </span>
+</div>
+
+<div class="trace-mode-banner">
+  <div>
+    <span class="section-kicker">LEDGER MODE</span>
+    <h3>本地审计账本</h3>
+    <p>SQLite 哈希链 · 记录业务操作及前后摘要。</p>
+  </div>
+  {{ ledger_mode() }}
+</div>
+
+<section class="panel table-panel">
+  <div class="panel-head">
+    <div><span class="section-kicker">EVENT STREAM</span><h3>事件记录</h3></div>
+    <span class="chart-caption">按倒序显示，可见范围受组织权限限制</span>
+  </div>
+  {% if events %}
+    <div class="table-scroll tall">
+      <table class="data-table trace-table">
+        <thead><tr><th>事件</th><th>对象</th><th>执行组织</th><th>交易 ID</th><th>事件摘要</th><th>时间</th></tr></thead>
+        <tbody>
+        {% for event in events %}
+          <tr>
+            <td><strong>{{ event_label(event.event_type) }}</strong><span class="table-sub">{{ event.mode }}</span></td>
+            <td>{{ event.object_type }} #{{ event.object_id }}</td>
+            <td>{{ organizations.get(event.actor_org_id, '系统') }}</td>
+            <td><code class="hash">{{ event.tx_id }}</code></td>
+            <td><code class="hash">{{ event.event_hash[:24] }}…</code></td>
+            <td>{{ event.created_at|datetime_cn }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state large"><span class="empty-icon">{{ icon('shield', 28) }}</span><h4>还没有可见事件</h4><p>发布供给、登记需求、生成方案或预留后会在这里出现证据。</p></div>
+  {% endif %}
+</section>
+
+<div class="platform-note">
+  {{ icon('info', 16) }}
+  <p><strong>存储说明：</strong>当前记录保存在 SQLite 本地审计账本，未连接 Fabric 网络。摘要校验用于核对记录完整性。</p>
+</div>
+{% endblock %}

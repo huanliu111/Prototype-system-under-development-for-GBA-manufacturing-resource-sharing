@@ -1,0 +1,197 @@
+{% extends "layouts/app.html" %}
+{% from "_icons.html" import icon %}
+{% from "platform/_macros.html" import status_badge, role_badge, ledger_mode, event_label %}
+{% block title %}{{ workspace_title }}{% endblock %}
+{% block topbar_kicker %}COORDINATION WORKSPACE{% endblock %}
+{% block page_title %}{{ workspace_title }}{% endblock %}
+{% block content %}
+<section class="platform-hero">
+  <div>
+    <span class="section-kicker">REGIONAL MANUFACTURING ALLIANCE</span>
+    <h2>{{ organization.name }}</h2>
+    <p>{{ role_badge(current_membership.role) }} {{ organization.location }}</p><p>{{ '处理联盟内待协调需求、容量预留与结算。' if is_alliance_user else '处理本企业供需和参与的共享任务。' }}</p>
+  </div>
+  <div class="platform-hero-actions">
+    {% if can('supply.write') %}
+      <a class="btn btn-primary" href="{{ url_for('platform.resources') }}">{{ icon('plus', 16) }} 发布供给</a>
+    {% endif %}
+    {% if can('demand.write') %}
+      <a class="btn btn-ghost" href="{{ url_for('platform.demands') }}">{{ icon('flask', 16) }} 登记需求</a>
+    {% elif can('coordination.write') %}
+      <a class="btn btn-ghost" href="{{ url_for('platform.demands') }}">{{ icon('spark', 16) }} 查看待协调需求</a>
+    {% else %}
+      <a class="btn btn-ghost" href="{{ url_for('platform.trace') }}">{{ icon('shield', 16) }} 查看操作记录</a>
+    {% endif %}
+  </div>
+</section>
+
+
+
+<section class="kpi-grid platform-kpis">
+  <article class="kpi-card highlight">
+    <div class="kpi-head"><span>可用共享能力</span><span class="kpi-icon teal">{{ icon('layers', 18) }}</span></div>
+    <strong class="kpi-value">{{ stats.available_kinds }} 类</strong>
+    <span class="kpi-foot">按能力与计量单位分列，共 {{ stats.supply_count }} 个供给窗口</span>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-head"><span>待协调需求</span><span class="kpi-icon amber">{{ icon('flask', 18) }}</span></div>
+    <strong class="kpi-value">{{ stats.open_demands }}</strong>
+    <span class="kpi-foot">{{ stats.demand_count }} 个需求记录</span>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-head"><span>待确认承诺</span><span class="kpi-icon blue">{{ icon('check', 18) }}</span></div>
+    <strong class="kpi-value">{{ stats.pending_confirmations }}</strong>
+    <span class="kpi-foot">需要参与方确认同一版本</span>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-head"><span>进行中共享</span><span class="kpi-icon">{{ icon('spark', 18) }}</span></div>
+    <strong class="kpi-value">{{ stats.active_commitments }}</strong>
+    <span class="kpi-foot">预留至验收之间的承诺</span>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-head"><span>已完成共享</span><span class="kpi-icon teal">{{ icon('check', 18) }}</span></div>
+    <strong class="kpi-value">{{ stats.completed_commitments }}</strong>
+    <span class="kpi-foot">已验收或已记账的共享任务</span>
+  </article>
+</section>
+
+<div class="dashboard-grid platform-main-grid">
+  <section class="panel">
+    <div class="panel-head">
+      <div><span class="section-kicker">NEXT ACTIONS</span><h3>进行中共享任务</h3></div>
+      <a class="text-link" href="{{ url_for('platform.commitments') }}">全部共享任务 {{ icon('arrow', 14) }}</a>
+    </div>
+    {% if commitments %}
+      <div class="experiment-list">
+        {% for item in commitments %}
+          <a class="experiment-row" href="{{ url_for('platform.commitment_detail', commitment_id=item.id) }}">
+            <span class="experiment-mark {{ 'sample' if item.status == 'RESERVED' }}">
+              {{ icon('check' if item.status != 'RESERVED' else 'clock', 18) }}
+            </span>
+            <span class="experiment-main">
+              <strong>{{ item.ref }} · {{ item.buyer_name }}</strong>
+              <span>{{ item.total_milli|hours(item.unit) }} · {{ item.window_start|datetime_cn('%m-%d %H:%M') }} 开始</span>
+            </span>
+            <span class="experiment-metrics">
+              {{ status_badge(item.status) }}
+              <span>查看详情</span>
+            </span>
+            <span class="experiment-arrow">{{ icon('chevron', 17) }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-icon">{{ icon('check', 28) }}</span>
+        <h4>暂无待处理的共享任务</h4>
+        <p>{{ '从资源供给和需求开始生成协调方案。' if is_alliance_user else '本企业参与的共享任务将在这里显示。' }}</p>
+        <a class="btn btn-soft btn-sm" href="{{ url_for('platform.demands') }}">前往需求中心</a>
+      </div>
+    {% endif %}
+  </section>
+
+  <aside class="dashboard-side">
+    <section class="panel">
+      <div class="panel-head"><h3>{{ '最近协调方案' if is_alliance_user else '本企业分配结果' }}</h3><a class="text-link" href="{{ url_for('platform.plans') }}">全部方案 {{ icon('arrow', 14) }}</a></div>
+      <div class="miot-plan-list">
+      {% for plan in plans[:3] %}
+        <a class="miot-plan-row" href="{{ url_for('platform.plan_detail', plan_id=plan.id) }}"><span><strong>PLAN-{{ '%04d'|format(plan.id) }}</strong>{{ status_badge(plan.status) }}</span><small>{{ plan.demand_title }}</small></a>
+      {% else %}<div class="empty-state compact"><p>暂无协调方案。</p></div>{% endfor %}
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h3>最近完成共享</h3><a class="text-link" href="{{ url_for('platform.commitments') }}">全部任务 {{ icon('arrow', 14) }}</a></div>
+      <div class="miot-plan-list">
+      {% for item in completed_commitments %}
+        <a class="miot-plan-row" href="{{ url_for('platform.commitment_detail', commitment_id=item.id) }}"><span><strong>{{ item.ref }}</strong>{{ status_badge(item.status) }}</span><small>{{ item.buyer_name }} · {{ item.total_milli|hours(item.unit) }}</small></a>
+      {% else %}<div class="empty-state compact"><p>还没有已完成的共享任务。</p></div>{% endfor %}
+      </div>
+    </section>
+  </aside>
+</div>
+
+{% if can('algorithms.read') %}<section class="panel cda-validation-card">
+  <div class="cda-validation-mark">{{ icon('chart', 24) }}</div>
+  <div class="cda-validation-copy">
+    <span class="section-kicker">INDEPENDENT VALIDATION</span>
+    <h3>连续双向拍卖 · 共享情景验证</h3>
+    <p>用原始离散单位双向拍卖引擎，观察共享如何形成价格、成交与社会剩余；单独记录，不进入连续机时算法对比表。</p>
+    <div class="cda-validation-facts"><span>6×6 离散单位样本</span><span>41 笔合约</span><span>85% 实现效率</span><span>Q* = 17</span></div>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('platform.cda_demo') }}">打开验证页 {{ icon('arrow', 15) }}</a>
+</section>{% endif %}
+
+<div class="platform-lower-grid">
+  <section class="panel table-panel">
+    <div class="panel-head">
+      <div><span class="section-kicker">DEMAND SNAPSHOT</span><h3>最近需求</h3></div>
+      <a class="text-link" href="{{ url_for('platform.demands') }}">需求中心 {{ icon('arrow', 14) }}</a>
+    </div>
+    {% if demands %}
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>需求</th><th>企业</th><th>最低量</th><th>窗口</th><th>状态</th></tr></thead>
+          <tbody>
+          {% for item in demands %}
+            <tr>
+              <td><a class="table-primary" href="{{ url_for('platform.demands') }}#demand-{{ item.id }}">{{ item.title }}</a></td>
+              <td>{{ item.org_name }}</td>
+              <td>{{ item.required_milli|hours(item.unit) }}</td>
+              <td>{{ item.window_start|datetime_cn('%m-%d %H:%M') }} – {{ item.window_end|datetime_cn('%H:%M') }}</td>
+              <td>{{ status_badge(item.status) }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state compact"><p>还没有生产需求。</p></div>
+    {% endif %}
+  </section>
+
+  <section class="panel table-panel">
+    <div class="panel-head">
+      <div><span class="section-kicker">SUPPLY SNAPSHOT</span><h3>最近供给</h3></div>
+      <a class="text-link" href="{{ url_for('platform.resources') }}">资源供给 {{ icon('arrow', 14) }}</a>
+    </div>
+    {% if supplies %}
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>能力 / 站点</th><th>企业</th><th>可用</th><th>窗口</th><th>版本</th></tr></thead>
+          <tbody>
+          {% for item in supplies %}
+            <tr>
+              <td><strong>{{ item.capability }}</strong><span class="table-sub">{{ item.site }}</span></td>
+              <td>{{ item.org_name }}</td>
+              <td>{{ (item.total_milli - item.reserved_milli - item.consumed_milli)|hours(item.unit) }}</td>
+              <td>{{ item.window_start|datetime_cn('%m-%d %H:%M') }} – {{ item.window_end|datetime_cn('%H:%M') }}</td>
+              <td class="mono">v{{ item.version }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state compact"><p>还没有资源供给。</p></div>
+    {% endif %}
+  </section>
+</div>
+
+<section class="panel trace-preview">
+  <div class="panel-head">
+    <div><span class="section-kicker">RECENT EVIDENCE</span><h3>最近操作记录</h3></div>
+    {{ ledger_mode() }}
+  </div>
+  <div class="evidence-list">
+    {% for event in events %}
+      <div class="evidence-row">
+        <span class="evidence-dot"></span>
+        <div><strong>{{ event_label(event.event_type) }}</strong><span>{{ event.object_type }} #{{ event.object_id }} · {{ event.created_at|datetime_cn }}</span></div>
+        <code>{{ event.tx_id }}</code>
+      </div>
+    {% else %}
+      <div class="empty-state compact"><p>还没有账本事件。</p></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
