@@ -18,9 +18,9 @@ When the service is live, replace this line with the public URL.
 
 ## Screenshots
 
-### Paper figure: six-panel prototype walkthrough
+### figure: six-panel prototype walkthrough
 
-![Paper prototype figure](screenshots/fig12_prototype_system.png)
+![Prototype figure](screenshots/fig12_prototype_system.png)
 
 ### Coordinator workspace
 
